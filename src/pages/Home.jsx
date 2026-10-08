@@ -17,9 +17,6 @@ const Home = () => {
           <button className="icon-btn">
             <Bell size={22} />
           </button>
-          <button className="icon-btn avatar-btn">
-            {auth.user?.profile?.email ? auth.user.profile.email.charAt(0).toUpperCase() : <User size={20} />}
-          </button>
         </div>
       </header>
 
