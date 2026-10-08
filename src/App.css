@@ -1,16 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
-  --primary-color: #6366f1;
-  --primary-hover: #4f46e5;
-  --danger-color: #ef4444;
-  --danger-hover: #dc2626;
-  --bg-dark: #0f172a;
-  --text-main: #f8fafc;
-  --text-muted: #94a3b8;
-  --glass-bg: rgba(30, 41, 59, 0.7);
-  --glass-border: rgba(255, 255, 255, 0.1);
-  --glass-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  --primary-color: #5FBD5F;
+  --primary-hover: #4ea84e;
+  --bg-main: #F8FAFC;
+  --text-main: #1E293B;
 }
 
 * {
@@ -21,10 +15,9 @@
 
 body {
   font-family: 'Inter', sans-serif;
-  background-color: var(--bg-dark);
+  background-color: var(--bg-main);
   color: var(--text-main);
   min-height: 100vh;
-  overflow: hidden;
 }
 
 .app-container {

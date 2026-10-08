@@ -16,15 +16,12 @@ function App() {
     }
   }, [auth]);
 
-  if (auth.isLoading || auth.activeNavigator) {
-    return (
-      <div className="app-container">
-        <div className="glass-card loading-card">
-          <div className="spinner"></div>
-          <h2>Redirecting to Login...</h2>
-        </div>
-      </div>
-    );
+  if (auth.activeNavigator === "signinRedirect") {
+    return null;
+  }
+
+  if (auth.isLoading) {
+    return null;
   }
 
   if (auth.error) {
@@ -54,14 +51,7 @@ function App() {
     );
   }
 
-  return (
-    <div className="app-container">
-      <div className="glass-card loading-card">
-        <div className="spinner"></div>
-        <h2>Redirecting to Login...</h2>
-      </div>
-    </div>
-  );
+  return null;
 }
 
 export default App;

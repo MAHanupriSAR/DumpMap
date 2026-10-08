@@ -1,3 +1,5 @@
+
+
 Configure your user pool app client with allowed callback URLs, logout URLs, and the scopes that you want to request, for example openid and profile. Learn more 
 
 2
