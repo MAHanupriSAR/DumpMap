@@ -1,0 +1,81 @@
+.mobile-app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100%;
+  max-width: 480px; /* Mobile constraint */
+  margin: 0 auto;
+  background-color: #F8FAFC;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 20px rgba(0,0,0,0.05);
+}
+
+.main-content {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 80px; /* Space for bottom nav */
+  background-color: #F8FAFC; /* Soft off-white background */
+}
+
+.bottom-nav {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 72px;
+  background-color: #FFFFFF;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.04);
+  padding: 0 16px;
+  z-index: 100;
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  color: #94A3B8;
+  gap: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 8px 12px;
+  border-radius: 16px;
+  transition: all 0.2s ease;
+}
+
+.nav-item span {
+  opacity: 0;
+  height: 0;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.nav-item:hover {
+  color: #64748B;
+}
+
+.nav-item.active {
+  color: #5FBD5F; /* The green from the design */
+  background-color: rgba(95, 189, 95, 0.1);
+}
+
+.nav-item.active span {
+  opacity: 1;
+  height: auto;
+}
+
+/* Hide scrollbar for clean look */
+.main-content::-webkit-scrollbar {
+  display: none;
+}
+.main-content {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
