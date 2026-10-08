@@ -29,7 +29,8 @@
   align-items: center;
   border-radius: 36px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-  padding: 0 16px;
+  /* Top/bottom padding is (72 - 50)/2 = 11px. Left/right padding should match to create perfect concentric curves */
+  padding: 0 11px;
   z-index: 100;
 }
 
@@ -37,18 +38,16 @@
   position: absolute;
   top: 50%;
   /* 
-    Calculate exact center of active item:
-    1. Base offset: 16px (left padding of bottom-nav)
-    2. Available width: calc(100% - 32px)
-    3. Item width: calc((100% - 32px) / 4)
-    4. Move to active item's center: (item width * index) + (item width / 2)
+    Calculate exact center of active item with new 11px padding:
+    1. Base offset: 11px (left padding)
+    2. Available width: calc(100% - 22px)
   */
-  left: calc(16px + ((100% - 32px) / 4) * var(--active-index) + ((100% - 32px) / 8));
+  left: calc(11px + ((100% - 22px) / 4) * var(--active-index) + ((100% - 22px) / 8));
   transform: translate(-50%, -50%);
-  width: 100px;
+  width: calc((100% - 22px) / 4); 
   height: 50px;
   background-color: rgba(95, 189, 95, 0.1);
-  border-radius: 26px;
+  border-radius: 25px; /* Inner radius = Outer radius (36) - padding (11) */
   transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 0;
 }
