@@ -44,16 +44,48 @@ const ReportWaste = () => {
     setIsLocating(true);
     setLocationError('');
     
-    const successCallback = (position) => {
-      setIsLocating(false);
-      setFormData(prev => ({
-        ...prev, 
-        location: {
-          type: 'current',
-          lat: position.coords.latitude,
-          lng: position.coords.longitude
+    const successCallback = async (position) => {
+      const lat = position.coords.latitude;
+      const lng = position.coords.longitude;
+
+      try {
+        const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`);
+        if (!response.ok) throw new Error('Network response was not ok');
+        const data = await response.json();
+        
+        let addressText = data.display_name;
+        
+        // Nominatim display_names can be very long. Let's truncate to the first 3 or 4 meaningful parts.
+        if (addressText) {
+          const parts = addressText.split(', ');
+          addressText = parts.slice(0, Math.min(4, parts.length)).join(', ');
+        } else {
+          addressText = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
         }
-      }));
+
+        setIsLocating(false);
+        setFormData(prev => ({
+          ...prev, 
+          location: {
+            type: 'current',
+            lat,
+            lng,
+            address: addressText
+          }
+        }));
+      } catch (err) {
+        console.warn("Reverse geocoding failed, falling back to coordinates", err);
+        setIsLocating(false);
+        setFormData(prev => ({
+          ...prev, 
+          location: {
+            type: 'current',
+            lat,
+            lng,
+            address: `${lat.toFixed(5)}, ${lng.toFixed(5)}`
+          }
+        }));
+      }
     };
 
     const fallbackToLowAccuracy = () => {
@@ -138,8 +170,8 @@ const ReportWaste = () => {
               <div style={{display: 'flex', flexDirection: 'column', alignItems: 'flex-start'}}>
                 <span>{isLocating ? 'Acquiring location...' : 'Use my current location'}</span>
                 {formData.location?.type === 'current' && (
-                  <span style={{fontSize: '0.8rem', color: '#64748B', marginTop: '2px'}}>
-                    Lat: {formData.location.lat.toFixed(5)}, Lng: {formData.location.lng.toFixed(5)}
+                  <span style={{fontSize: '0.8rem', color: '#64748B', marginTop: '4px', lineHeight: '1.4', textAlign: 'left'}}>
+                    {formData.location.address}
                   </span>
                 )}
               </div>
