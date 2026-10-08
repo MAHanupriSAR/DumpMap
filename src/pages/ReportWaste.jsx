@@ -58,12 +58,21 @@ const ReportWaste = () => {
   };
 
   const toggleSeverity = (issue) => {
-    setFormData(prev => ({
-      ...prev,
-      severity: prev.severity.includes(issue) 
-        ? prev.severity.filter(i => i !== issue)
-        : [...prev.severity, issue]
-    }));
+    setFormData(prev => {
+      const isSelected = prev.severity.includes(issue);
+      
+      if (issue === 'None') {
+        // If checking 'None', clear everything else
+        return { ...prev, severity: isSelected ? [] : ['None'] };
+      } else {
+        // If checking anything else, remove 'None' if it was selected
+        if (!isSelected) {
+          return { ...prev, severity: [...prev.severity.filter(i => i !== 'None'), issue] };
+        } else {
+          return { ...prev, severity: prev.severity.filter(i => i !== issue) };
+        }
+      }
+    });
   };
 
   const handlePhotoUpload = (event) => {
