@@ -49,6 +49,7 @@ const ReportWaste = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [mapCenter, setMapCenter] = useState({ lat: 40.7128, lng: -74.0060 }); // Default
   const [isMapGeocoding, setIsMapGeocoding] = useState(false);
+  const [photoPreview, setPhotoPreview] = useState(null);
 
   const handleNext = () => setStep(prev => prev + 1);
   const handleBack = () => {
@@ -63,6 +64,15 @@ const ReportWaste = () => {
         ? prev.severity.filter(i => i !== issue)
         : [...prev.severity, issue]
     }));
+  };
+
+  const handlePhotoUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const previewUrl = URL.createObjectURL(file);
+      setPhotoPreview(previewUrl);
+      setFormData(prev => ({ ...prev, photo: file }));
+    }
   };
 
   const handleCurrentLocation = () => {
@@ -368,19 +378,42 @@ const ReportWaste = () => {
             <h2 className="step-title">Add a photo</h2>
             <p className="step-subtitle">Photo helps verify the report.</p>
             
-            <div className="photo-actions">
-              <button className="take-photo-btn" onClick={() => { setFormData({...formData, photo: 'camera'}); handleNext(); }}>
-                <Camera size={48} color="#5FBD5F" />
-                <span>Take a photo</span>
-              </button>
-              
-              <button className="gallery-btn" onClick={() => { setFormData({...formData, photo: 'gallery'}); handleNext(); }}>
-                <ImageIcon size={20} />
-                <span>Choose from gallery</span>
-              </button>
-            </div>
-            
-            <button className="btn secondary-btn skip-btn" onClick={handleNext}>Skip for now</button>
+            {!photoPreview ? (
+              <div className="photo-actions">
+                <label className="take-photo-btn" style={{ cursor: 'pointer' }}>
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    capture="environment" 
+                    style={{ display: 'none' }} 
+                    onChange={handlePhotoUpload}
+                  />
+                  <Camera size={48} color="#5FBD5F" />
+                  <span>Take a photo</span>
+                </label>
+                
+                <label className="gallery-btn" style={{ cursor: 'pointer' }}>
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    style={{ display: 'none' }} 
+                    onChange={handlePhotoUpload}
+                  />
+                  <ImageIcon size={20} />
+                  <span>Choose from gallery</span>
+                </label>
+              </div>
+            ) : (
+              <div className="photo-preview-container">
+                <img src={photoPreview} alt="Waste preview" className="photo-preview-img" />
+                <button className="btn secondary-btn block-btn" style={{ marginTop: '16px' }} onClick={() => {
+                  setPhotoPreview(null);
+                  setFormData(prev => ({ ...prev, photo: null }));
+                }}>
+                  Retake photo
+                </button>
+              </div>
+            )}
           </div>
         )}
 
@@ -500,17 +533,19 @@ const ReportWaste = () => {
       </main>
 
       {/* Footer Navigation (Next Button) */}
-      {(step === 1 || (step > 2 && step < 6)) && (
+      {step < 6 && (
         <footer className="report-footer">
           <button 
-            className="btn primary-btn block-btn" 
+            className={`btn block-btn ${step === 2 && !photoPreview ? 'secondary-btn' : 'primary-btn'}`}
             onClick={step === 5 ? submitReport : handleNext}
             disabled={
               (step === 1 && !formData.location) ||
               (step === 3 && (!formData.type || !formData.amount))
             }
           >
-            {step === 5 ? 'Submit Report' : 'Continue'}
+            {step === 5 ? 'Submit Report' : 
+             step === 2 && !photoPreview ? 'Skip for now' : 
+             'Continue'}
           </button>
         </footer>
       )}
