@@ -211,6 +211,9 @@ const ReportWaste = () => {
         addressText = `${center.lat.toFixed(5)}, ${center.lng.toFixed(5)}`;
       }
 
+      setSearchQuery(addressText);
+      setSearchResults([]);
+
       setFormData(prev => ({
         ...prev, 
         location: {
@@ -222,13 +225,16 @@ const ReportWaste = () => {
       }));
     } catch (err) {
       console.warn('Reverse geocode failed', err);
+      const fallbackText = `${center.lat.toFixed(5)}, ${center.lng.toFixed(5)}`;
+      setSearchQuery(fallbackText);
+      
       setFormData(prev => ({
         ...prev, 
         location: {
           type: 'manual',
           lat: center.lat,
           lng: center.lng,
-          address: `${center.lat.toFixed(5)}, ${center.lng.toFixed(5)}`
+          address: fallbackText
         }
       }));
     }
@@ -297,6 +303,7 @@ const ReportWaste = () => {
                 // If they have a current location, use it to center map, else default
                 if (formData.location?.type === 'current') {
                   setMapCenter({ lat: formData.location.lat, lng: formData.location.lng });
+                  setSearchQuery(formData.location.address);
                 }
                 setFormData({...formData, location: { type: 'manual' }});
               }}
@@ -315,8 +322,9 @@ const ReportWaste = () => {
                     type="text" 
                     className="search-input" 
                     placeholder="Search for a place or address"
-                    value={searchQuery}
+                    value={isMapGeocoding ? 'Fetching address...' : searchQuery}
                     onChange={(e) => handleSearchInput(e.target.value)}
+                    disabled={isMapGeocoding}
                   />
                   {searchResults.length > 0 && (
                     <ul className="search-results-dropdown">
@@ -348,10 +356,6 @@ const ReportWaste = () => {
                   }}>
                     <MapPin size={36} color="#EF4444" fill="#EF4444" />
                   </div>
-                </div>
-                
-                <div style={{ marginTop: '12px', fontSize: '0.85rem', color: '#64748B' }}>
-                  {isMapGeocoding ? 'Fetching address...' : formData.location.address || 'Drag map to select location'}
                 </div>
               </div>
             )}
