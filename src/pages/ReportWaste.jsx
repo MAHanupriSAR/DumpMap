@@ -73,6 +73,8 @@ const ReportWaste = () => {
       setPhotoPreview(previewUrl);
       setFormData(prev => ({ ...prev, photo: file }));
     }
+    // Clear the input so selecting the same file again triggers onChange
+    event.target.value = null;
   };
 
   const handleCurrentLocation = () => {
@@ -406,11 +408,41 @@ const ReportWaste = () => {
             ) : (
               <div className="photo-preview-container">
                 <img src={photoPreview} alt="Waste preview" className="photo-preview-img" />
-                <button className="btn secondary-btn block-btn" style={{ marginTop: '16px' }} onClick={() => {
-                  setPhotoPreview(null);
-                  setFormData(prev => ({ ...prev, photo: null }));
-                }}>
-                  Retake photo
+                
+                <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
+                  <label className="btn secondary-btn" style={{ flex: 1, display: 'flex', justifyContent: 'center', gap: '8px', cursor: 'pointer' }}>
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      capture="environment" 
+                      style={{ display: 'none' }} 
+                      onChange={handlePhotoUpload}
+                    />
+                    <Camera size={18} />
+                    Retake
+                  </label>
+                  
+                  <label className="btn secondary-btn" style={{ flex: 1, display: 'flex', justifyContent: 'center', gap: '8px', cursor: 'pointer' }}>
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      style={{ display: 'none' }} 
+                      onChange={handlePhotoUpload}
+                    />
+                    <ImageIcon size={18} />
+                    Gallery
+                  </label>
+                </div>
+                
+                <button 
+                  className="btn danger-btn" 
+                  style={{ width: '100%', marginTop: '12px' }}
+                  onClick={() => {
+                    setPhotoPreview(null);
+                    setFormData(prev => ({ ...prev, photo: null }));
+                  }}
+                >
+                  Remove Photo
                 </button>
               </div>
             )}
