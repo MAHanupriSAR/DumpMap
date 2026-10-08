@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Layout from "./components/Layout";
 import Home from "./pages/Home";
 import Placeholder from "./pages/Placeholder";
+import ReportWaste from "./pages/ReportWaste";
 import './App.css';
 
 function App() {
@@ -46,6 +47,7 @@ function App() {
             <Route path="reports" element={<Placeholder title="My Reports" />} />
             <Route path="profile" element={<Placeholder title="Profile" />} />
           </Route>
+          <Route path="/report" element={<ReportWaste />} />
         </Routes>
       </BrowserRouter>
     );

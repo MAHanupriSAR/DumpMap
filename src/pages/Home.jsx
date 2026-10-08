@@ -1,9 +1,11 @@
-import { Bell, User, MapPin, AlertCircle, CheckCircle } from 'lucide-react';
+import { Bell, MapPin, AlertCircle, CheckCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import './Home.css';
 import { useAuth } from 'react-oidc-context';
 
 const Home = () => {
   const auth = useAuth();
+  const navigate = useNavigate();
   
   return (
     <div className="home-container">
@@ -27,7 +29,7 @@ const Home = () => {
 
       {/* Primary Action Button */}
       <section className="action-section">
-        <button className="report-btn">
+        <button className="report-btn" onClick={() => navigate('/report')}>
           <div className="btn-content">
             <div className="btn-icon">
               <MapPin size={24} />
