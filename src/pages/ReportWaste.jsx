@@ -543,11 +543,13 @@ const ReportWaste = () => {
               <CheckCircle size={64} color="#5FBD5F" />
             </div>
             <h2>Report submitted</h2>
-            <p className="ticket-id">#WS-18427</p>
+            <p className="ticket-id">#WS-{Math.floor(10000 + Math.random() * 90000)}</p>
             
             <div className="location-summary">
-              <MapPin size={20} color="#64748B" />
-              <span>Sector 12, Main Road</span>
+              <MapPin size={20} color="#64748B" style={{ flexShrink: 0 }} />
+              <span style={{ textAlign: 'center', wordBreak: 'break-word', padding: '0 8px' }}>
+                {formData.location?.address || 'Location saved'}
+              </span>
             </div>
             
             <p className="success-msg">Your report has been added to the local waste map.</p>
