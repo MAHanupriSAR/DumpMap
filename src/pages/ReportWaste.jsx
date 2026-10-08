@@ -1,7 +1,31 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, MapPin, Search, Camera, Image as ImageIcon, CheckCircle, Map as MapIcon, Leaf, Recycle, Home as Construction, FileText, AlertTriangle, HelpCircle, Loader2 } from 'lucide-react';
+import { MapContainer, TileLayer, useMapEvents, useMap } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
 import './ReportWaste.css';
+
+function MapController({ center }) {
+  const map = useMap();
+  useEffect(() => {
+    if (center) {
+      map.flyTo([center.lat, center.lng], 16, { animate: true, duration: 0.5 });
+    }
+  }, [center, map]);
+  return null;
+}
+
+function MapEvents({ onMoveEnd }) {
+  const map = useMapEvents({
+    dragend: () => {
+      onMoveEnd(map.getCenter());
+    },
+    zoomend: () => {
+      onMoveEnd(map.getCenter());
+    }
+  });
+  return null;
+}
 
 const ReportWaste = () => {
   const navigate = useNavigate();
@@ -19,6 +43,12 @@ const ReportWaste = () => {
 
   const [isLocating, setIsLocating] = useState(false);
   const [locationError, setLocationError] = useState('');
+  
+  // Manual Location State
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [mapCenter, setMapCenter] = useState({ lat: 40.7128, lng: -74.0060 }); // Default
+  const [isMapGeocoding, setIsMapGeocoding] = useState(false);
 
   const handleNext = () => setStep(prev => prev + 1);
   const handleBack = () => {
@@ -126,6 +156,85 @@ const ReportWaste = () => {
     );
   };
 
+  const handleSearchInput = async (value) => {
+    setSearchQuery(value);
+    if (value.length < 3) {
+      setSearchResults([]);
+      return;
+    }
+    try {
+      const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(value)}&limit=5`);
+      const data = await response.json();
+      setSearchResults(data);
+    } catch (e) {
+      console.error('Search failed', e);
+    }
+  };
+
+  const selectSearchResult = (result) => {
+    const lat = parseFloat(result.lat);
+    const lng = parseFloat(result.lon);
+    
+    let addressText = result.display_name;
+    if (addressText) {
+      const parts = addressText.split(', ');
+      addressText = parts.slice(0, Math.min(4, parts.length)).join(', ');
+    }
+    
+    setMapCenter({ lat, lng });
+    setSearchQuery('');
+    setSearchResults([]);
+    
+    setFormData(prev => ({
+      ...prev,
+      location: {
+        type: 'manual',
+        lat,
+        lng,
+        address: addressText
+      }
+    }));
+  };
+
+  const handleMapMoveEnd = async (center) => {
+    setIsMapGeocoding(true);
+    try {
+      const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${center.lat}&lon=${center.lng}&zoom=18&addressdetails=1`);
+      if (!response.ok) throw new Error('Network error');
+      const data = await response.json();
+      
+      let addressText = data.display_name;
+      if (addressText) {
+        const parts = addressText.split(', ');
+        addressText = parts.slice(0, Math.min(4, parts.length)).join(', ');
+      } else {
+        addressText = `${center.lat.toFixed(5)}, ${center.lng.toFixed(5)}`;
+      }
+
+      setFormData(prev => ({
+        ...prev, 
+        location: {
+          type: 'manual',
+          lat: center.lat,
+          lng: center.lng,
+          address: addressText
+        }
+      }));
+    } catch (err) {
+      console.warn('Reverse geocode failed', err);
+      setFormData(prev => ({
+        ...prev, 
+        location: {
+          type: 'manual',
+          lat: center.lat,
+          lng: center.lng,
+          address: `${center.lat.toFixed(5)}, ${center.lng.toFixed(5)}`
+        }
+      }));
+    }
+    setIsMapGeocoding(false);
+  };
+
   const submitReport = () => {
     // In a real app, send formData to backend here
     setStep(6); // Success step
@@ -184,7 +293,13 @@ const ReportWaste = () => {
             
             <button 
               className={`option-btn ${formData.location?.type === 'manual' ? 'selected-option' : ''}`} 
-              onClick={() => setFormData({...formData, location: { type: 'manual' }})}
+              onClick={() => {
+                // If they have a current location, use it to center map, else default
+                if (formData.location?.type === 'current') {
+                  setMapCenter({ lat: formData.location.lat, lng: formData.location.lng });
+                }
+                setFormData({...formData, location: { type: 'manual' }});
+              }}
             >
               <div className="option-icon">
                 {formData.location?.type === 'manual' ? <CheckCircle size={24} color="#5FBD5F" /> : <Search size={24} />}
@@ -192,10 +307,54 @@ const ReportWaste = () => {
               <span>Enter location manually</span>
             </button>
 
-            <div className="map-placeholder">
-              <MapIcon size={48} color="#94A3B8" />
-              <p>Map view preview</p>
-            </div>
+            {formData.location?.type === 'manual' && (
+              <div className="manual-location-container">
+                <div style={{ position: 'relative', marginBottom: '16px' }}>
+                  <Search size={20} color="#94A3B8" style={{ position: 'absolute', left: '12px', top: '12px' }} />
+                  <input 
+                    type="text" 
+                    className="search-input" 
+                    placeholder="Search for a place or address"
+                    value={searchQuery}
+                    onChange={(e) => handleSearchInput(e.target.value)}
+                  />
+                  {searchResults.length > 0 && (
+                    <ul className="search-results-dropdown">
+                      {searchResults.map(result => (
+                        <li key={result.place_id} onClick={() => selectSearchResult(result)}>
+                          {result.display_name}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+                
+                <div style={{ position: 'relative', height: '240px', borderRadius: '16px', overflow: 'hidden', border: '1px solid #E2E8F0' }}>
+                  <MapContainer 
+                    center={[mapCenter.lat, mapCenter.lng]} 
+                    zoom={15} 
+                    style={{ height: '100%', width: '100%', zIndex: 1 }}
+                    zoomControl={false}
+                  >
+                    <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                    <MapController center={mapCenter} />
+                    <MapEvents onMoveEnd={handleMapMoveEnd} />
+                  </MapContainer>
+                  
+                  {/* Fixed Center Pin - Pinned on top of map UI */}
+                  <div style={{ 
+                    position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -100%)', 
+                    zIndex: 2, pointerEvents: 'none' 
+                  }}>
+                    <MapPin size={36} color="#EF4444" fill="#EF4444" />
+                  </div>
+                </div>
+                
+                <div style={{ marginTop: '12px', fontSize: '0.85rem', color: '#64748B' }}>
+                  {isMapGeocoding ? 'Fetching address...' : formData.location.address || 'Drag map to select location'}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
