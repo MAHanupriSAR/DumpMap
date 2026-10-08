@@ -25,12 +25,13 @@
   right: 24px;
   height: 72px;
   background-color: #FFFFFF;
+  border: 1px solid rgb(19, 171, 19, 0.5); /* Subtle green border */
   display: flex;
   align-items: center;
   border-radius: 36px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-  /* Top/bottom padding is (72 - 50)/2 = 11px. Left/right padding should match to create perfect concentric curves */
-  padding: 0 11px;
+  /* Inner height is 70px (due to 1px border). Top/bottom gap is (70 - 50)/2 = 10px. Left/right padding should match to create perfect concentric curves */
+  padding: 0 10px;
   z-index: 100;
 }
 
@@ -38,13 +39,13 @@
   position: absolute;
   top: 50%;
   /* 
-    Calculate exact center of active item with new 11px padding:
-    1. Base offset: 11px (left padding)
-    2. Available width: calc(100% - 22px)
+    Calculate exact center of active item with new 10px padding:
+    1. Base offset: 10px (left padding)
+    2. Available width: calc(100% - 20px)
   */
-  left: calc(11px + ((100% - 22px) / 4) * var(--active-index) + ((100% - 22px) / 8));
+  left: calc(10px + ((100% - 20px) / 4) * var(--active-index) + ((100% - 20px) / 8));
   transform: translate(-50%, -50%);
-  width: calc((100% - 22px) / 4); 
+  width: calc((100% - 20px) / 4); 
   height: 50px;
   background-color: rgba(95, 189, 95, 0.1);
   border-radius: 25px; /* Inner radius = Outer radius (36) - padding (11) */
