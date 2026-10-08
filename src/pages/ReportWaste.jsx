@@ -54,7 +54,6 @@ const ReportWaste = () => {
           lng: position.coords.longitude
         }
       }));
-      handleNext();
     };
 
     const fallbackToLowAccuracy = () => {
@@ -123,14 +122,27 @@ const ReportWaste = () => {
             <h2 className="step-title">Where is the waste?</h2>
             
             <button 
-              className={`option-btn primary-option ${isLocating ? 'locating' : ''}`} 
+              className={`option-btn primary-option ${isLocating ? 'locating' : ''} ${formData.location?.type === 'current' ? 'selected-option' : ''}`} 
               onClick={handleCurrentLocation}
               disabled={isLocating}
             >
               <div className="option-icon">
-                {isLocating ? <Loader2 size={24} color="#5FBD5F" className="spin-icon" /> : <MapPin size={24} color="#5FBD5F" />}
+                {isLocating ? (
+                  <Loader2 size={24} color="#5FBD5F" className="spin-icon" />
+                ) : formData.location?.type === 'current' ? (
+                  <CheckCircle size={24} color="#5FBD5F" />
+                ) : (
+                  <MapPin size={24} color="#5FBD5F" />
+                )}
               </div>
-              <span>{isLocating ? 'Acquiring location...' : 'Use my current location'}</span>
+              <div style={{display: 'flex', flexDirection: 'column', alignItems: 'flex-start'}}>
+                <span>{isLocating ? 'Acquiring location...' : 'Use my current location'}</span>
+                {formData.location?.type === 'current' && (
+                  <span style={{fontSize: '0.8rem', color: '#64748B', marginTop: '2px'}}>
+                    Lat: {formData.location.lat.toFixed(5)}, Lng: {formData.location.lng.toFixed(5)}
+                  </span>
+                )}
+              </div>
             </button>
             {locationError && <p className="error-text">{locationError}</p>}
             
@@ -138,8 +150,13 @@ const ReportWaste = () => {
               <span>OR</span>
             </div>
             
-            <button className="option-btn" onClick={() => { setFormData({...formData, location: { type: 'manual' }}); handleNext(); }}>
-              <div className="option-icon"><Search size={24} /></div>
+            <button 
+              className={`option-btn ${formData.location?.type === 'manual' ? 'selected-option' : ''}`} 
+              onClick={() => setFormData({...formData, location: { type: 'manual' }})}
+            >
+              <div className="option-icon">
+                {formData.location?.type === 'manual' ? <CheckCircle size={24} color="#5FBD5F" /> : <Search size={24} />}
+              </div>
               <span>Enter location manually</span>
             </button>
 
@@ -288,12 +305,15 @@ const ReportWaste = () => {
       </main>
 
       {/* Footer Navigation (Next Button) */}
-      {step > 2 && step < 6 && (
+      {(step === 1 || (step > 2 && step < 6)) && (
         <footer className="report-footer">
           <button 
             className="btn primary-btn block-btn" 
             onClick={step === 5 ? submitReport : handleNext}
-            disabled={step === 3 && (!formData.type || !formData.amount)}
+            disabled={
+              (step === 1 && !formData.location) ||
+              (step === 3 && (!formData.type || !formData.amount))
+            }
           >
             {step === 5 ? 'Submit Report' : 'Continue'}
           </button>
