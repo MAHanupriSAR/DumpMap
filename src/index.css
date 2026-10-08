@@ -3,7 +3,12 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-body {
+html, body {
   margin: 0;
   padding: 0;
+  overflow: hidden;
+  height: 100%;
+  height: 100dvh;
+  width: 100vw;
+  background-color: #F8FAFC; /* Match app background to avoid flashes */
 }
