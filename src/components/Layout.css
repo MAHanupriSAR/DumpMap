@@ -20,21 +20,41 @@
 
 .bottom-nav {
   position: absolute;
-  bottom: 24px; /* Floating offset from bottom */
-  left: 24px;   /* Offset from sides */
+  bottom: 24px;
+  left: 24px;
   right: 24px;
   height: 72px;
   background-color: #FFFFFF;
   display: flex;
-  justify-content: space-around;
   align-items: center;
-  border-radius: 36px; /* Full pill shape */
-  box-shadow: 0 10px 30px rgba(0,0,0,0.08); /* Pronounced shadow for floating effect */
+  border-radius: 36px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
   padding: 0 16px;
   z-index: 100;
 }
 
+.nav-slider {
+  position: absolute;
+  top: 50%;
+  /* 
+    Calculate exact center of active item:
+    1. Base offset: 16px (left padding of bottom-nav)
+    2. Available width: calc(100% - 32px)
+    3. Item width: calc((100% - 32px) / 4)
+    4. Move to active item's center: (item width * index) + (item width / 2)
+  */
+  left: calc(16px + ((100% - 32px) / 4) * var(--active-index) + ((100% - 32px) / 8));
+  transform: translate(-50%, -50%);
+  width: 100px;
+  height: 50px;
+  background-color: rgba(95, 189, 95, 0.1);
+  border-radius: 26px;
+  transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 0;
+}
+
 .nav-item {
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -44,10 +64,10 @@
   gap: 2px;
   font-size: 0.7rem;
   font-weight: 600;
-  width: 100px;
   height: 50px;
   border-radius: 26px;
   transition: all 0.2s ease;
+  z-index: 1; /* keep above slider */
 }
 
 .nav-item span {
@@ -62,8 +82,7 @@
 }
 
 .nav-item.active {
-  color: #5FBD5F; /* The green from the design */
-  background-color: rgba(95, 189, 95, 0.1);
+  color: #5FBD5F;
 }
 
 .nav-item.active span {
