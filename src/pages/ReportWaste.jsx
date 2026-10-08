@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, MapPin, Search, Camera, Image as ImageIcon, CheckCircle, Map as MapIcon, Leaf, Recycle, Home as Construction, FileText, AlertTriangle, HelpCircle } from 'lucide-react';
+import { ArrowLeft, MapPin, Search, Camera, Image as ImageIcon, CheckCircle, Map as MapIcon, Leaf, Recycle, Home as Construction, FileText, AlertTriangle, HelpCircle, Loader2 } from 'lucide-react';
 import './ReportWaste.css';
 
 const ReportWaste = () => {
@@ -17,6 +17,9 @@ const ReportWaste = () => {
     description: ''
   });
 
+  const [isLocating, setIsLocating] = useState(false);
+  const [locationError, setLocationError] = useState('');
+
   const handleNext = () => setStep(prev => prev + 1);
   const handleBack = () => {
     if (step === 1 || step === 6) navigate('/');
@@ -30,6 +33,66 @@ const ReportWaste = () => {
         ? prev.severity.filter(i => i !== issue)
         : [...prev.severity, issue]
     }));
+  };
+
+  const handleCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      setLocationError('Geolocation is not supported by your browser.');
+      return;
+    }
+    
+    setIsLocating(true);
+    setLocationError('');
+    
+    const successCallback = (position) => {
+      setIsLocating(false);
+      setFormData(prev => ({
+        ...prev, 
+        location: {
+          type: 'current',
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        }
+      }));
+      handleNext();
+    };
+
+    const fallbackToLowAccuracy = () => {
+      navigator.geolocation.getCurrentPosition(
+        successCallback,
+        (error) => {
+          setIsLocating(false);
+          if (error.code === error.PERMISSION_DENIED) {
+            setLocationError('Permission denied. Please allow location in your browser.');
+          } else if (error.code === error.POSITION_UNAVAILABLE) {
+            setLocationError('Location unavailable. Ensure your device OS location services are ON.');
+          } else if (error.code === error.TIMEOUT) {
+            setLocationError('Location request timed out. Please try again.');
+          } else {
+            setLocationError('An unknown error occurred.');
+          }
+          console.error("Geolocation fallback error:", error);
+        },
+        { enableHighAccuracy: false, timeout: 10000, maximumAge: 10000 }
+      );
+    };
+
+    // Try high accuracy first (critical for mobile devices to use GPS)
+    navigator.geolocation.getCurrentPosition(
+      successCallback,
+      (error) => {
+        // If high accuracy fails (common on desktops), immediately fallback to low accuracy
+        if (error.code === error.TIMEOUT || error.code === error.POSITION_UNAVAILABLE) {
+          console.warn("High accuracy failed, falling back to low accuracy...");
+          fallbackToLowAccuracy();
+        } else {
+          // If permission denied, no need to fallback
+          setIsLocating(false);
+          setLocationError('Permission denied. Please allow location in your browser.');
+        }
+      },
+      { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+    );
   };
 
   const submitReport = () => {
@@ -59,16 +122,23 @@ const ReportWaste = () => {
           <div className="step-wrapper">
             <h2 className="step-title">Where is the waste?</h2>
             
-            <button className="option-btn primary-option" onClick={() => { setFormData({...formData, location: 'current'}); handleNext(); }}>
-              <div className="option-icon"><MapPin size={24} color="#5FBD5F" /></div>
-              <span>Use my current location</span>
+            <button 
+              className={`option-btn primary-option ${isLocating ? 'locating' : ''}`} 
+              onClick={handleCurrentLocation}
+              disabled={isLocating}
+            >
+              <div className="option-icon">
+                {isLocating ? <Loader2 size={24} color="#5FBD5F" className="spin-icon" /> : <MapPin size={24} color="#5FBD5F" />}
+              </div>
+              <span>{isLocating ? 'Acquiring location...' : 'Use my current location'}</span>
             </button>
+            {locationError && <p className="error-text">{locationError}</p>}
             
             <div className="divider">
               <span>OR</span>
             </div>
             
-            <button className="option-btn" onClick={() => { setFormData({...formData, location: 'manual'}); handleNext(); }}>
+            <button className="option-btn" onClick={() => { setFormData({...formData, location: { type: 'manual' }}); handleNext(); }}>
               <div className="option-icon"><Search size={24} /></div>
               <span>Enter location manually</span>
             </button>

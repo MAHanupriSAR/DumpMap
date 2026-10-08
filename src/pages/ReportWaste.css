@@ -125,6 +125,28 @@
   background-color: #FFFFFF;
 }
 
+.option-btn.locating {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.spin-icon {
+  animation: spin 1s linear infinite;
+}
+
+.error-text {
+  color: #EF4444;
+  font-size: 0.85rem;
+  margin-top: 8px;
+  padding-left: 4px;
+  font-weight: 500;
+}
+
 .divider {
   display: flex;
   align-items: center;
