@@ -6,7 +6,7 @@ import Home from "./pages/Home";
 import ReportWaste from "./pages/ReportWaste";
 import MapView from "./pages/MapView";
 import MyReports from "./pages/MyReports";
-import Placeholder from "./pages/Placeholder";
+import ProfileView from "./pages/ProfileView";
 import './App.css';
 
 function App() {
@@ -47,7 +47,7 @@ function App() {
             <Route index element={<Home />} />
             <Route path="map" element={<MapView />} />
             <Route path="reports" element={<MyReports />} />
-            <Route path="profile" element={<Placeholder title="Profile" />} />
+            <Route path="profile" element={<ProfileView />} />
           </Route>
           <Route path="/report" element={<ReportWaste />} />
         </Routes>

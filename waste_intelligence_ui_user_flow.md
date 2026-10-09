@@ -134,7 +134,7 @@ Manual selection is important because GPS may be inaccurate or the user may be r
 The photo should be **optional**, but strongly encouraged.
 
 The user should still be able to report a waste dump quickly without being forced to stop and photograph it.
-
+  
 ---
 
 # 4. Waste Type
