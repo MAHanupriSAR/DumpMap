@@ -40,16 +40,6 @@ const ProfileView = () => {
         {/* Menu Options */}
         <h3 className="section-subtitle">Settings</h3>
         <div className="menu-list">
-          <button className="menu-item">
-            <div className="menu-item-left">
-              <div className="menu-icon-bg">
-                <Settings size={20} color="#475569" />
-              </div>
-              <span>Account Settings</span>
-            </div>
-            <ChevronRight size={20} color="#94A3B8" />
-          </button>
-          
           <button className="menu-item text-danger" onClick={handleSignOut}>
             <div className="menu-item-left">
               <div className="menu-icon-bg danger">
