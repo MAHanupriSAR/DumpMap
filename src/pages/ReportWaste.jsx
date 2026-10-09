@@ -266,6 +266,36 @@ const ReportWaste = () => {
     setIsMapGeocoding(false);
   };
 
+  const calculateCriticality = (data) => {
+    let score = 0;
+    
+    // 1. Base score on waste type
+    const typePoints = { hazardous: 3, construction: 2, mixed: 1, plastic: 1, notsure: 1 };
+    score += typePoints[data.type] || 0;
+    
+    // 2. Add points based on amount
+    const amountPoints = { Large: 3, Medium: 2, Small: 1 };
+    score += amountPoints[data.amount] || 0;
+    
+    // 3. Add points based on specific issues (severity array)
+    const severityPoints = { 
+      'Blocking drain': 3, 
+      'Burning/smoke': 3, 
+      'Blocking road/path': 2, 
+      'Attracting animals': 2, 
+      'Bad smell': 1 
+    };
+    if (data.severity && Array.isArray(data.severity)) {
+      data.severity.forEach(issue => {
+        score += severityPoints[issue] || 0;
+      });
+    }
+
+    if (score >= 6) return 'high';
+    if (score >= 3) return 'medium';
+    return 'low';
+  };
+
   const submitReport = async () => {
     setIsSubmitting(true);
     try {
@@ -293,7 +323,9 @@ const ReportWaste = () => {
         lat: formData.location.lat,
         lng: formData.location.lng,
         type: formData.type,
+        amount: formData.amount,
         severity: formData.severity,
+        criticality: calculateCriticality(formData),
         description: formData.description,
         photoUrl: photoUrl,
         userId: auth.user?.profile?.sub || 'anonymous'
@@ -596,6 +628,19 @@ const ReportWaste = () => {
             </div>
             <h2>Report submitted</h2>
             <p className="ticket-id">#{submittedId}</p>
+
+            <div style={{ marginTop: '8px', marginBottom: '16px' }}>
+              <span style={{
+                padding: '4px 12px',
+                borderRadius: '16px',
+                fontSize: '0.85rem',
+                fontWeight: '600',
+                color: '#FFF',
+                backgroundColor: calculateCriticality(formData) === 'high' ? '#EF4444' : calculateCriticality(formData) === 'medium' ? '#F59E0B' : '#5FBD5F'
+              }}>
+                {calculateCriticality(formData) === 'high' ? 'High Severity' : calculateCriticality(formData) === 'medium' ? 'Moderate Severity' : 'Low Severity'}
+              </span>
+            </div>
             
             <div className="location-summary">
               <MapPin size={20} color="#64748B" style={{ flexShrink: 0 }} />

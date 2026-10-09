@@ -71,10 +71,6 @@ const MyReports = () => {
             <div className="report-card-header">
               <div className="report-main-info">
                 <div className="report-location">
-                  <div 
-                    className="severity-dot" 
-                    style={{ backgroundColor: getSeverityColor(report.severity) }}
-                  />
                   <h3>{report.location}</h3>
                 </div>
                 <span className="report-time">Reported {formatTime(report.createdAt)}</span>
@@ -106,8 +102,13 @@ const MyReports = () => {
             }}>
               <div className="report-details-content">
                 <div className="report-meta">
-                  <span className="report-id">{report.id}</span>
-                  <span className="report-type">{report.type} waste</span>
+                  <span className="report-id" style={{ marginTop: '4px' }}>{report.id}</span>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-end' }}>
+                    <span className="report-type" style={{ backgroundColor: getSeverityColor(report.criticality || 'low'), color: '#fff', border: 'none' }}>
+                      {report.criticality === 'high' ? 'High' : report.criticality === 'medium' ? 'Mod' : 'Low'} Severity
+                    </span>
+                    <span className="report-type">{report.type} waste</span>
+                  </div>
                 </div>
                 
                 <p className="report-desc">"{report.description}"</p>

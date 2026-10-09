@@ -82,7 +82,6 @@
 .report-time {
   font-size: 0.85rem;
   color: #64748B;
-  padding-left: 20px; /* Aligned with text after dot */
 }
 
 .report-status-badge {
