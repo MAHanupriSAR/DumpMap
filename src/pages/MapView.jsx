@@ -49,37 +49,40 @@ const LocationPanner = ({ center }) => {
 
 const MapView = () => {
   const [userLocation, setUserLocation] = useState(null);
-  const [mapCenter, setMapCenter] = useState([40.7128, -74.0060]); // Default to NYC
+  const [mapCenter, setMapCenter] = useState(null); // null = not ready yet
+  const [locationLoading, setLocationLoading] = useState(true);
 
   useEffect(() => {
-    if (!navigator.geolocation) return;
+    if (!navigator.geolocation) {
+      // No geolocation support, fall back to NYC
+      setMapCenter([20.5937, 78.9629]); // Fall back to India center
+      setLocationLoading(false);
+      return;
+    }
 
-    const successCallback = (position) => {
+    const onSuccess = (position) => {
       const lat = position.coords.latitude;
       const lng = position.coords.longitude;
       setUserLocation({ lat, lng });
       setMapCenter([lat, lng]);
+      setLocationLoading(false);
     };
 
-    const fallbackToLowAccuracy = () => {
-      navigator.geolocation.getCurrentPosition(
-        successCallback,
-        (err) => console.warn('Low accuracy geolocation error:', err),
-        { enableHighAccuracy: false, timeout: 10000, maximumAge: 10000 }
-      );
+    const onError = () => {
+      // Fall back to a generic center if location is denied/unavailable
+      setMapCenter([20.5937, 78.9629]);
+      setLocationLoading(false);
     };
 
-    // Try high accuracy first (critical for mobile)
+    // Try high accuracy first (GPS on mobile), fall back to low accuracy on desktop
     navigator.geolocation.getCurrentPosition(
-      successCallback,
-      (error) => {
-        // If high accuracy fails (common on desktops), fallback to low accuracy
-        if (error.code === error.TIMEOUT || error.code === error.POSITION_UNAVAILABLE) {
-          console.warn("High accuracy failed, falling back to low accuracy...");
-          fallbackToLowAccuracy();
-        } else {
-          console.warn('Geolocation error:', error);
-        }
+      onSuccess,
+      () => {
+        navigator.geolocation.getCurrentPosition(onSuccess, onError, {
+          enableHighAccuracy: false,
+          timeout: 10000,
+          maximumAge: 10000,
+        });
       },
       { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
     );
@@ -104,7 +107,13 @@ const MapView = () => {
       <div className="map-header-overlay">
         <h2>Waste Hotspots</h2>
       </div>
-      
+
+      {locationLoading ? (
+        <div className="map-loading">
+          <div className="map-loading-dot"></div>
+          <p>Finding your location…</p>
+        </div>
+      ) : (
       <MapContainer 
         center={mapCenter} 
         zoom={14} 
@@ -151,7 +160,9 @@ const MapView = () => {
           </CircleMarker>
         ))}
       </MapContainer>
-      
+      )}
+
+      {!locationLoading && (
       <div className="map-legend">
         <div className="legend-item">
           <div className="legend-color" style={{ backgroundColor: '#EF4444' }}></div>
@@ -166,6 +177,7 @@ const MapView = () => {
           <span>Cleaned</span>
         </div>
       </div>
+      )}
     </div>
   );
 };
