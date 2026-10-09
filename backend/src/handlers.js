@@ -73,7 +73,6 @@ module.exports.createReport = async (event) => {
       timeline: [
         { status: 'Reported', completed: true, timestamp: new Date().toISOString() },
         { status: 'Verified', completed: false },
-        { status: 'Cleanup assigned', completed: false },
         { status: 'Resolved', completed: false }
       ],
       createdAt: new Date().toISOString(),

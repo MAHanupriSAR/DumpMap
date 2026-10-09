@@ -662,7 +662,7 @@ const ReportWaste = () => {
               </div>
               <div className="timeline-item">
                 <div className="timeline-dot"></div>
-                <span>Cleanup assigned</span>
+                <span>Resolved</span>
               </div>
             </div>
             
