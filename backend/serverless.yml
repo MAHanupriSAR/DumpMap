@@ -1,0 +1,78 @@
+service: dumpmap-backend
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: us-east-1
+  environment:
+    REPORTS_TABLE: ${self:service}-${sls:stage}-reports
+    UPLOAD_BUCKET: ${self:service}-${sls:stage}-uploads-${aws:accountId}
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:PutItem
+            - dynamodb:Scan
+            - dynamodb:GetItem
+            - dynamodb:Query
+          Resource: "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:provider.environment.REPORTS_TABLE}"
+        - Effect: Allow
+          Action:
+            - s3:PutObject
+            - s3:GetObject
+          Resource: "arn:aws:s3:::${self:provider.environment.UPLOAD_BUCKET}/*"
+
+functions:
+  getUploadUrl:
+    handler: src/handlers.getUploadUrl
+    events:
+      - httpApi:
+          path: /upload-url
+          method: get
+          # In production, enable authorizer here to restrict to logged-in users
+
+  createReport:
+    handler: src/handlers.createReport
+    events:
+      - httpApi:
+          path: /reports
+          method: post
+
+  getReports:
+    handler: src/handlers.getReports
+    events:
+      - httpApi:
+          path: /reports
+          method: get
+
+resources:
+  Resources:
+    ReportsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.REPORTS_TABLE}
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+
+    UploadBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:provider.environment.UPLOAD_BUCKET}
+        CorsConfiguration:
+          CorsRules:
+            - AllowedHeaders:
+                - "*"
+              AllowedMethods:
+                - PUT
+                - GET
+              AllowedOrigins:
+                - "*" # Restrict this to your frontend domain in production
+              MaxAge: 3000
