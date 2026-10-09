@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, CircleMarker, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, CircleMarker, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import { AlertTriangle, CheckCircle, Leaf, Construction } from 'lucide-react';
 import './MapView.css';
@@ -20,42 +20,75 @@ const userLocationIcon = L.divIcon({
   iconAnchor: [12, 12]
 });
 
-// Mock hotspots data
-const MOCK_HOTSPOTS = [
-  { id: 1, lat: 40.7135, lng: -74.0045, severity: 'high', type: 'mixed', description: 'Blocking sidewalk', status: 'reported' },
-  { id: 2, lat: 40.7112, lng: -74.0080, severity: 'medium', type: 'plastic', description: 'Overflowing bin', status: 'verified' },
-  { id: 3, lat: 40.7150, lng: -74.0020, severity: 'low', type: 'organic', description: 'Cleared yard waste', status: 'cleaned' },
-  { id: 4, lat: 40.7142, lng: -74.0105, severity: 'high', type: 'construction', description: 'Debris on road', status: 'reported' }
-];
+// No more MOCK_HOTSPOTS
 
 // Helper to get color based on severity
-const getHotspotColor = (severity, status) => {
-  if (status === 'cleaned') return '#5FBD5F'; // Green
-  if (severity === 'high') return '#EF4444';  // Red
-  if (severity === 'medium') return '#F59E0B'; // Yellow
+const getHotspotColor = (criticality) => {
+  if (criticality === 'high') return '#EF4444';  // Red
+  if (criticality === 'medium') return '#F59E0B'; // Yellow
   return '#3B82F6'; // Blue for low
 };
 
-// Component to dynamically pan to user location once found
-const LocationPanner = ({ center }) => {
-  const map = useMap();
-  useEffect(() => {
-    if (center) {
-      map.flyTo(center, 15, { animate: true });
+const formatTime = (isoString) => {
+  if (!isoString) return 'Just now';
+  const date = new Date(isoString);
+  return date.toLocaleDateString() + ', ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+};
+
+// Component to track and save map pan/zoom state
+const MapStateSaver = () => {
+  useMapEvents({
+    moveend: (e) => {
+      const map = e.target;
+      const center = map.getCenter();
+      sessionStorage.setItem('cachedMapCenter', JSON.stringify({ lat: center.lat, lng: center.lng }));
+    },
+    zoomend: (e) => {
+      const map = e.target;
+      sessionStorage.setItem('cachedMapZoom', map.getZoom());
     }
-  }, [center, map]);
+  });
   return null;
 };
 
 const MapView = () => {
   const [userLocation, setUserLocation] = useState(null);
-  const [mapCenter, setMapCenter] = useState(null); // null = not ready yet
+  const [mapCenter, setMapCenter] = useState(null);
+  const [mapZoom, setMapZoom] = useState(14);
   const [locationLoading, setLocationLoading] = useState(true);
+  const [hotspots, setHotspots] = useState([]);
 
   useEffect(() => {
+    // 1. If we have a cached pan location, use it as the map center
+    const savedCenter = sessionStorage.getItem('cachedMapCenter');
+    const savedZoom = sessionStorage.getItem('cachedMapZoom');
+    
+    let initialCenter = null;
+    let initialZoom = savedZoom ? parseInt(savedZoom, 10) : 14;
+
+    if (savedCenter) {
+      const parsedCenter = JSON.parse(savedCenter);
+      initialCenter = [parsedCenter.lat, parsedCenter.lng];
+      setMapCenter(initialCenter);
+      setMapZoom(initialZoom);
+    }
+
+    // 2. Also load user GPS location for the "You are here" pin
+    const cachedLoc = sessionStorage.getItem('cachedUserLocation');
+    if (cachedLoc) {
+      const parsedLoc = JSON.parse(cachedLoc);
+      setUserLocation(parsedLoc);
+      
+      if (!initialCenter) {
+        setMapCenter([parsedLoc.lat, parsedLoc.lng]);
+      }
+      setLocationLoading(false);
+      return;
+    }
+
     if (!navigator.geolocation) {
-      // No geolocation support, fall back to NYC
-      setMapCenter([20.5937, 78.9629]); // Fall back to India center
+      // No geolocation support, fall back to India center
+      setMapCenter([20.5937, 78.9629]); 
       setLocationLoading(false);
       return;
     }
@@ -63,14 +96,21 @@ const MapView = () => {
     const onSuccess = (position) => {
       const lat = position.coords.latitude;
       const lng = position.coords.longitude;
-      setUserLocation({ lat, lng });
-      setMapCenter([lat, lng]);
+      const loc = { lat, lng };
+      setUserLocation(loc);
+      
+      if (!initialCenter) {
+        setMapCenter([lat, lng]);
+      }
+      
+      sessionStorage.setItem('cachedUserLocation', JSON.stringify(loc));
       setLocationLoading(false);
     };
 
     const onError = () => {
-      // Fall back to a generic center if location is denied/unavailable
-      setMapCenter([20.5937, 78.9629]);
+      if (!initialCenter) {
+        setMapCenter([20.5937, 78.9629]);
+      }
       setLocationLoading(false);
     };
 
@@ -88,19 +128,23 @@ const MapView = () => {
     );
   }, []);
 
-  // Generate localized mock hotspots if user location is available
-  const displayHotspots = userLocation 
-    ? MOCK_HOTSPOTS.map((hs, i) => {
-        // Create offsets to place them somewhat near the user
-        const latOffset = (Math.random() - 0.5) * 0.01;
-        const lngOffset = (Math.random() - 0.5) * 0.01;
-        return {
-          ...hs,
-          lat: userLocation.lat + latOffset,
-          lng: userLocation.lng + lngOffset
-        };
-      })
-    : MOCK_HOTSPOTS;
+  useEffect(() => {
+    const fetchReports = async () => {
+      try {
+        const response = await fetch('https://9y9e6wstgh.execute-api.us-east-1.amazonaws.com/reports');
+        const data = await response.json();
+        // Only show active hotspots, remove resolved ones
+        const activeHotspots = (data.reports || []).filter(report => report.status !== 'resolved');
+        setHotspots(activeHotspots);
+      } catch (err) {
+        console.error("Failed to fetch reports for map", err);
+      }
+    };
+    
+    fetchReports();
+  }, []);
+
+  const displayHotspots = hotspots;
 
   return (
     <div className="map-view-container">
@@ -116,7 +160,7 @@ const MapView = () => {
       ) : (
       <MapContainer 
         center={mapCenter} 
-        zoom={14} 
+        zoom={mapZoom} 
         style={{ height: '100%', width: '100%' }}
         zoomControl={false}
       >
@@ -125,7 +169,7 @@ const MapView = () => {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
         
-        {userLocation && <LocationPanner center={userLocation} />}
+        <MapStateSaver />
 
         {/* User Location Marker */}
         {userLocation && (
@@ -134,26 +178,32 @@ const MapView = () => {
           </Marker>
         )}
 
-        {/* Hotspots */}
         {displayHotspots.map(hotspot => (
           <CircleMarker
             key={hotspot.id}
-            center={[hotspot.lat, hotspot.lng]}
+            center={[parseFloat(hotspot.lat), parseFloat(hotspot.lng)]}
             radius={12}
             pathOptions={{ 
-              color: getHotspotColor(hotspot.severity, hotspot.status),
-              fillColor: getHotspotColor(hotspot.severity, hotspot.status),
-              fillOpacity: hotspot.status === 'cleaned' ? 0.3 : 0.6,
+              color: getHotspotColor(hotspot.criticality),
+              fillColor: getHotspotColor(hotspot.criticality),
+              fillOpacity: 0.6,
               weight: 2
             }}
           >
             <Popup className="hotspot-popup">
               <div className="popup-content">
-                <h3>{hotspot.type.charAt(0).toUpperCase() + hotspot.type.slice(1)} Waste</h3>
-                <p>{hotspot.description}</p>
-                <div className={`status-badge ${hotspot.status}`}>
-                  {hotspot.status === 'cleaned' ? <CheckCircle size={14} /> : <AlertTriangle size={14} />}
-                  <span>{hotspot.status}</span>
+                <h3 style={{ textTransform: 'capitalize', marginBottom: '4px' }}>{hotspot.type} Waste</h3>
+                <p style={{ margin: '4px 0', fontSize: '0.85rem', color: '#64748B' }}>Reported: {formatTime(hotspot.createdAt)}</p>
+                <p style={{ fontStyle: 'italic', margin: '8px 0' }}>{hotspot.description}</p>
+                
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '8px' }}>
+                  <div className={`status-badge`} style={{ backgroundColor: getHotspotColor(hotspot.criticality), color: '#fff' }}>
+                    <AlertTriangle size={14} />
+                    <span style={{ textTransform: 'capitalize' }}>{hotspot.status}</span>
+                  </div>
+                  <div className="status-badge" style={{ backgroundColor: '#F1F5F9', color: '#475569' }}>
+                    <span style={{ textTransform: 'capitalize' }}>{hotspot.criticality || 'low'} Severity</span>
+                  </div>
                 </div>
               </div>
             </Popup>
@@ -173,8 +223,8 @@ const MapView = () => {
           <span>Moderate</span>
         </div>
         <div className="legend-item">
-          <div className="legend-color" style={{ backgroundColor: '#5FBD5F' }}></div>
-          <span>Cleaned</span>
+          <div className="legend-color" style={{ backgroundColor: '#3B82F6' }}></div>
+          <span>Low</span>
         </div>
       </div>
       )}
