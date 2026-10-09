@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from 'react-oidc-context';
 import { ArrowLeft, MapPin, Search, Camera, Image as ImageIcon, CheckCircle, Map as MapIcon, Leaf, Recycle, Home as Construction, FileText, AlertTriangle, HelpCircle, Loader2 } from 'lucide-react';
 import { MapContainer, TileLayer, useMapEvents, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -29,6 +30,7 @@ function MapEvents({ onMoveEnd }) {
 
 const ReportWaste = () => {
   const navigate = useNavigate();
+  const auth = useAuth();
   const [step, setStep] = useState(1);
   const totalSteps = 5; // Location, Photo, Type, Severity, Description
   
@@ -50,6 +52,7 @@ const ReportWaste = () => {
   const [mapCenter, setMapCenter] = useState({ lat: 40.7128, lng: -74.0060 }); // Default
   const [isMapGeocoding, setIsMapGeocoding] = useState(false);
   const [photoPreview, setPhotoPreview] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleNext = () => setStep(prev => prev + 1);
   const handleBack = () => {
@@ -262,9 +265,55 @@ const ReportWaste = () => {
     setIsMapGeocoding(false);
   };
 
-  const submitReport = () => {
-    // In a real app, send formData to backend here
-    setStep(6); // Success step
+  const submitReport = async () => {
+    setIsSubmitting(true);
+    try {
+      let photoUrl = null;
+
+      if (formData.photo) {
+        const fileExt = formData.photo.name ? formData.photo.name.split('.').pop() : 'jpg';
+        const fileType = formData.photo.type || 'image/jpeg';
+        
+        const urlRes = await fetch(`https://9y9e6wstgh.execute-api.us-east-1.amazonaws.com/upload-url?filename=photo.${fileExt}&filetype=${fileType}`);
+        const urlData = await urlRes.json();
+
+        if (urlData.uploadUrl) {
+          await fetch(urlData.uploadUrl, {
+            method: 'PUT',
+            body: formData.photo,
+            headers: { 'Content-Type': fileType }
+          });
+          photoUrl = urlData.fileUrl;
+        }
+      }
+
+      const reportPayload = {
+        location: formData.location.address,
+        lat: formData.location.lat,
+        lng: formData.location.lng,
+        type: formData.type,
+        severity: formData.severity,
+        description: formData.description,
+        photoUrl: photoUrl,
+        userId: auth.user?.profile?.sub || 'anonymous'
+      };
+
+      const res = await fetch('https://9y9e6wstgh.execute-api.us-east-1.amazonaws.com/reports', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(reportPayload)
+      });
+
+      if (res.ok) {
+        setStep(6);
+      } else {
+        console.error('Failed to submit report');
+      }
+    } catch (err) {
+      console.error('Error submitting report:', err);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -583,10 +632,11 @@ const ReportWaste = () => {
             onClick={step === 5 ? submitReport : handleNext}
             disabled={
               (step === 1 && !formData.location) ||
-              (step === 3 && (!formData.type || !formData.amount))
+              (step === 3 && (!formData.type || !formData.amount)) ||
+              isSubmitting
             }
           >
-            {step === 5 ? 'Submit Report' : 
+            {step === 5 ? (isSubmitting ? 'Submitting...' : 'Submit Report') : 
              step === 2 && !photoPreview ? 'Skip for now' : 
              'Continue'}
           </button>

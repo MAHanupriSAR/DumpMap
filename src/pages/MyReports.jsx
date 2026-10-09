@@ -1,57 +1,37 @@
-import { useState } from 'react';
-import { Clock, CheckCircle, MapPin, ChevronRight, AlertTriangle } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useAuth } from 'react-oidc-context';
+import { Clock, CheckCircle, MapPin, ChevronRight, AlertTriangle, Loader2 } from 'lucide-react';
 import './MyReports.css';
 
-const MOCK_REPORTS = [
-  {
-    id: 'WS-18427',
-    location: 'Sector 12, Main Road',
-    time: '2 hours ago',
-    severity: 'high',
-    status: 'pending',
-    type: 'mixed',
-    description: 'Blocking the sidewalk completely.',
-    timeline: [
-      { status: 'Reported', completed: true },
-      { status: 'Verified', completed: false },
-      { status: 'Cleanup assigned', completed: false },
-      { status: 'Resolved', completed: false }
-    ]
-  },
-  {
-    id: 'WS-18290',
-    location: 'Market Road, Near Square',
-    time: '5 days ago',
-    severity: 'medium',
-    status: 'resolved',
-    type: 'plastic',
-    description: 'Overflowing bins.',
-    timeline: [
-      { status: 'Reported', completed: true },
-      { status: 'Verified', completed: true },
-      { status: 'Cleanup assigned', completed: true },
-      { status: 'Resolved', completed: true }
-    ]
-  },
-  {
-    id: 'WS-17902',
-    location: 'School Road, East Gate',
-    time: '2 weeks ago',
-    severity: 'low',
-    status: 'resolved',
-    type: 'paper',
-    description: 'Litter on the street.',
-    timeline: [
-      { status: 'Reported', completed: true },
-      { status: 'Verified', completed: true },
-      { status: 'Cleanup assigned', completed: true },
-      { status: 'Resolved', completed: true }
-    ]
-  }
-];
-
 const MyReports = () => {
+  const auth = useAuth();
   const [expandedReportId, setExpandedReportId] = useState(null);
+  const [reports, setReports] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchReports = async () => {
+      try {
+        const userId = auth.user?.profile?.sub || 'anonymous';
+        const response = await fetch(`https://9y9e6wstgh.execute-api.us-east-1.amazonaws.com/reports?userId=${userId}`);
+        const data = await response.json();
+        // Sort newest first
+        const sorted = (data.reports || []).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        setReports(sorted);
+      } catch (err) {
+        console.error("Failed to fetch reports:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchReports();
+  }, []);
+
+  const formatTime = (isoString) => {
+    if (!isoString) return 'Just now';
+    const date = new Date(isoString);
+    return date.toLocaleDateString() + ', ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
 
   const toggleReport = (id) => {
     setExpandedReportId(expandedReportId === id ? null : id);
@@ -73,8 +53,17 @@ const MyReports = () => {
       </header>
 
       <div className="reports-list">
-        {MOCK_REPORTS.map((report) => (
-          <div 
+        {isLoading ? (
+          <div style={{ display: 'flex', justifyContent: 'center', padding: '40px' }}>
+            <Loader2 size={32} color="#5FBD5F" className="spin-icon" />
+          </div>
+        ) : reports.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '40px', color: '#64748B' }}>
+            <p>You haven't submitted any reports yet.</p>
+          </div>
+        ) : (
+          reports.map(report => (
+            <div 
             key={report.id} 
             className={`report-card ${expandedReportId === report.id ? 'expanded' : ''}`}
             onClick={() => toggleReport(report.id)}
@@ -88,7 +77,7 @@ const MyReports = () => {
                   />
                   <h3>{report.location}</h3>
                 </div>
-                <span className="report-time">Reported {report.time}</span>
+                <span className="report-time">Reported {formatTime(report.createdAt)}</span>
               </div>
               
               <div className="report-status-badge">
@@ -134,7 +123,8 @@ const MyReports = () => {
               </div>
             </div>
           </div>
-        ))}
+          ))
+        )}
       </div>
     </div>
   );
