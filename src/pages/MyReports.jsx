@@ -14,7 +14,8 @@ const MOCK_REPORTS = [
     timeline: [
       { status: 'Reported', completed: true },
       { status: 'Verified', completed: false },
-      { status: 'Cleanup assigned', completed: false }
+      { status: 'Cleanup assigned', completed: false },
+      { status: 'Resolved', completed: false }
     ]
   },
   {
