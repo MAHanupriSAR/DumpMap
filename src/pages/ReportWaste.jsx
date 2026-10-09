@@ -53,6 +53,7 @@ const ReportWaste = () => {
   const [isMapGeocoding, setIsMapGeocoding] = useState(false);
   const [photoPreview, setPhotoPreview] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submittedId, setSubmittedId] = useState('');
 
   const handleNext = () => setStep(prev => prev + 1);
   const handleBack = () => {
@@ -305,6 +306,8 @@ const ReportWaste = () => {
       });
 
       if (res.ok) {
+        const responseData = await res.json();
+        setSubmittedId(responseData.report?.id || 'UNKNOWN-ID');
         setStep(6);
       } else {
         console.error('Failed to submit report');
@@ -592,7 +595,7 @@ const ReportWaste = () => {
               <CheckCircle size={64} color="#5FBD5F" />
             </div>
             <h2>Report submitted</h2>
-            <p className="ticket-id">#WS-{Math.floor(10000 + Math.random() * 90000)}</p>
+            <p className="ticket-id">#{submittedId}</p>
             
             <div className="location-summary">
               <MapPin size={20} color="#64748B" style={{ flexShrink: 0 }} />

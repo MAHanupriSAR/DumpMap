@@ -55,10 +55,11 @@ module.exports.getUploadUrl = async (event) => {
 module.exports.createReport = async (event) => {
   try {
     const data = JSON.parse(event.body);
-    const reportId = `WS-${Math.floor(10000 + Math.random() * 90000)}`;
+    const reportId = uuidv4();
     
     const newReport = {
       id: reportId,
+      displayId: `WS-${reportId.substring(0, 8).toUpperCase()}`,
       location: data.location,
       lat: data.lat,
       lng: data.lng,
