@@ -20,6 +20,7 @@ const formatTimeAgo = (isoString) => {
 const AdminDashboard = () => {
   const [reports, setReports] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedHotspot, setSelectedHotspot] = useState(null);
 
   useEffect(() => {
     const fetchReports = async () => {
@@ -183,7 +184,10 @@ const AdminDashboard = () => {
                         <span className="meta-time">since {formatTimeAgo(hotspot.oldest)}</span>
                       </div>
                     </div>
-                    <button className="dispatch-btn">Dispatch</button>
+                    <div className="priority-actions-group">
+                      <button className="view-details-btn" onClick={() => setSelectedHotspot(hotspot)}>View Details</button>
+                      <button className="dispatch-btn">Dispatch</button>
+                    </div>
                   </div>
                 ))}
                 
@@ -193,6 +197,58 @@ const AdminDashboard = () => {
                     <p>No active hotspots found.</p>
                   </div>
                 )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* HOTSPOT DETAILS MODAL */}
+      {selectedHotspot && (
+        <div className="admin-modal-overlay" onClick={() => setSelectedHotspot(null)}>
+          <div className="admin-modal-content" onClick={e => e.stopPropagation()}>
+            <div className="admin-modal-header">
+              <h2>{selectedHotspot.location}</h2>
+              <button className="close-btn" onClick={() => setSelectedHotspot(null)}>✕</button>
+            </div>
+            <div className="admin-modal-body">
+              <p className="modal-subtitle">{selectedHotspot.reports.length} reports logged here</p>
+              
+              <div className="modal-reports-list">
+                {selectedHotspot.reports.map(report => (
+                  <div key={report.id} className="modal-report-card">
+                    <div className="report-card-header">
+                      <span className={`criticality-badge ${report.criticality || 'low'}`}>
+                        {(report.criticality || 'low').toUpperCase()}
+                      </span>
+                      <span className="report-time">{formatTimeAgo(report.createdAt)}</span>
+                    </div>
+                    
+                    <div className="report-card-details">
+                      <p><strong>Type:</strong> {report.type || 'General'} Waste</p>
+                      <p><strong>Amount:</strong> {report.amount || 'Unknown'}</p>
+                      
+                      {report.severity && report.severity.length > 0 && (
+                        <div className="report-issues">
+                          <strong>Issues:</strong>
+                          <div className="issue-tags">
+                            {report.severity.map(issue => <span key={issue} className="issue-tag">{issue}</span>)}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {report.description && (
+                        <p className="report-desc">"{report.description}"</p>
+                      )}
+                    </div>
+                    
+                    {report.photoUrl && (
+                      <div className="report-image-container">
+                        <img src={report.photoUrl} alt="Waste" className="report-image" />
+                      </div>
+                    )}
+                  </div>
+                ))}
               </div>
             </div>
           </div>

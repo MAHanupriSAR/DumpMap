@@ -313,7 +313,209 @@
     gap: 12px;
   }
   
-  .dispatch-btn {
+  .priority-actions-group {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .dispatch-btn, .view-details-btn {
     width: 100%;
   }
+
+  .admin-modal-content {
+    width: calc(100% - 32px);
+    max-height: 95vh;
+  }
+}
+
+/* Modal Styles */
+.admin-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 100000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.admin-modal-content {
+  background-color: #FFFFFF;
+  border-radius: 16px;
+  width: calc(100% - 64px);
+  max-width: 600px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  animation: modal-slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modal-slide-up {
+  from { opacity: 0; transform: translateY(20px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.admin-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px;
+  border-bottom: 1px solid #E2E8F0;
+}
+
+.admin-modal-header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: #0F172A;
+  font-weight: 700;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  color: #64748B;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.close-btn:hover {
+  background-color: #F1F5F9;
+  color: #0F172A;
+}
+
+.admin-modal-body {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.modal-subtitle {
+  margin: 0 0 20px 0;
+  color: #64748B;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.modal-reports-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.modal-report-card {
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 20px;
+  background-color: #F8FAFC;
+}
+
+.report-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.criticality-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.criticality-badge.high { background-color: #FEF2F2; color: #EF4444; }
+.criticality-badge.medium { background-color: #FFFBEB; color: #D97706; }
+.criticality-badge.low { background-color: #EFF6FF; color: #3B82F6; }
+
+.report-time {
+  font-size: 0.85rem;
+  color: #94A3B8;
+}
+
+.report-card-details p {
+  margin: 0 0 8px 0;
+  font-size: 0.95rem;
+  color: #334155;
+}
+
+.report-issues {
+  margin: 12px 0;
+}
+
+.report-issues strong {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+  color: #0F172A;
+}
+
+.issue-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.issue-tag {
+  background-color: #E2E8F0;
+  color: #475569;
+  font-size: 0.8rem;
+  padding: 4px 10px;
+  border-radius: 16px;
+  font-weight: 500;
+}
+
+.report-desc {
+  font-style: italic;
+  color: #64748B !important;
+  margin-top: 12px !important;
+  border-left: 3px solid #CBD5E1;
+  padding-left: 12px;
+}
+
+.report-image-container {
+  margin-top: 16px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #E2E8F0;
+}
+
+.report-image {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.priority-actions-group {
+  display: flex;
+  gap: 8px;
+}
+
+.view-details-btn {
+  background-color: #FFFFFF;
+  color: #334155;
+  border: 1px solid #CBD5E1;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.view-details-btn:hover {
+  background-color: #F1F5F9;
+  color: #0F172A;
 }

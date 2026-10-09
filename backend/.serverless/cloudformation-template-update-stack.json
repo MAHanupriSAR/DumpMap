@@ -192,7 +192,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/dumpmap-backend/dev/1791559244591-2026-10-09T15:20:44.591Z/dumpmap-backend.zip"
+          "S3Key": "serverless/dumpmap-backend/dev/1791578388958-2026-10-09T20:39:48.958Z/dumpmap-backend.zip"
         },
         "Handler": "src/handlers.getUploadUrl",
         "Runtime": "nodejs18.x",
@@ -223,7 +223,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/dumpmap-backend/dev/1791559244591-2026-10-09T15:20:44.591Z/dumpmap-backend.zip"
+          "S3Key": "serverless/dumpmap-backend/dev/1791578388958-2026-10-09T20:39:48.958Z/dumpmap-backend.zip"
         },
         "Handler": "src/handlers.createReport",
         "Runtime": "nodejs18.x",
@@ -254,7 +254,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/dumpmap-backend/dev/1791559244591-2026-10-09T15:20:44.591Z/dumpmap-backend.zip"
+          "S3Key": "serverless/dumpmap-backend/dev/1791578388958-2026-10-09T20:39:48.958Z/dumpmap-backend.zip"
         },
         "Handler": "src/handlers.getReports",
         "Runtime": "nodejs18.x",
@@ -592,6 +592,12 @@
       "Type": "AWS::S3::Bucket",
       "Properties": {
         "BucketName": "dumpmap-backend-dev-uploads-984844735243",
+        "PublicAccessBlockConfiguration": {
+          "BlockPublicAcls": false,
+          "BlockPublicPolicy": false,
+          "IgnorePublicAcls": false,
+          "RestrictPublicBuckets": false
+        },
         "CorsConfiguration": {
           "CorsRules": [
             {
@@ -606,6 +612,38 @@
                 "*"
               ],
               "MaxAge": 3000
+            }
+          ]
+        }
+      }
+    },
+    "UploadBucketPolicy": {
+      "Type": "AWS::S3::BucketPolicy",
+      "Properties": {
+        "Bucket": {
+          "Ref": "UploadBucket"
+        },
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Action": [
+                "s3:GetObject"
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:aws:s3:::",
+                    {
+                      "Ref": "UploadBucket"
+                    },
+                    "/*"
+                  ]
+                ]
+              },
+              "Principal": "*"
             }
           ]
         }
