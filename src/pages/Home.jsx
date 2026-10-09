@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Bell, MapPin, AlertCircle, CheckCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import './Home.css';
@@ -6,7 +7,29 @@ import { useAuth } from 'react-oidc-context';
 const Home = () => {
   const auth = useAuth();
   const navigate = useNavigate();
-  
+  const [stats, setStats] = useState({ total: 0, resolved: 0 });
+
+  useEffect(() => {
+    const fetchUserStats = async () => {
+      const userId = auth.user?.profile?.sub;
+      if (!userId) return;
+      
+      try {
+        const response = await fetch(`https://9y9e6wstgh.execute-api.us-east-1.amazonaws.com/reports?userId=${userId}`);
+        const data = await response.json();
+        const reports = data.reports || [];
+        setStats({
+          total: reports.length,
+          resolved: reports.filter(r => r.status === 'resolved').length
+        });
+      } catch (err) {
+        console.error("Failed to fetch user stats", err);
+      }
+    };
+    
+    fetchUserStats();
+  }, [auth.user]);
+
   return (
     <div className="home-container">
       {/* Header */}
@@ -62,14 +85,14 @@ const Home = () => {
         <div className="info-card stats-card">
           <div className="stats-row">
             <div className="stat-item">
-              <span className="stat-value">7</span>
+              <span className="stat-value">{stats.total}</span>
               <span className="stat-label">Reports</span>
             </div>
             <div className="stat-divider"></div>
             <div className="stat-item">
               <div className="stat-value-flex">
                 <CheckCircle size={18} color="#5FBD5F" />
-                <span className="stat-value">3</span>
+                <span className="stat-value">{stats.resolved}</span>
               </div>
               <span className="stat-label">Resolved</span>
             </div>

@@ -7,6 +7,7 @@ import ReportWaste from "./pages/ReportWaste";
 import MapView from "./pages/MapView";
 import MyReports from "./pages/MyReports";
 import ProfileView from "./pages/ProfileView";
+import AdminDashboard from "./pages/AdminDashboard";
 import './App.css';
 
 function App() {
@@ -50,6 +51,7 @@ function App() {
             <Route path="profile" element={<ProfileView />} />
           </Route>
           <Route path="/report" element={<ReportWaste />} />
+          <Route path="/admin" element={<AdminDashboard />} />
         </Routes>
       </BrowserRouter>
     );
