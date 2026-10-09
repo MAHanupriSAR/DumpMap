@@ -36,7 +36,7 @@
   box-shadow: 0 10px 30px rgba(0,0,0,0.08);
   /* Inner height is 70px (due to 1px border). Top/bottom gap is (70 - 50)/2 = 10px. Left/right padding should match to create perfect concentric curves */
   padding: 0 10px;
-  z-index: 100;
+  z-index: 2000;
 }
 
 .nav-slider {
