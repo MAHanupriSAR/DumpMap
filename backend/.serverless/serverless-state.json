@@ -8,6 +8,24 @@
       "name": "aws",
       "runtime": "nodejs18.x",
       "region": "us-east-1",
+      "httpApi": {
+        "cors": {
+          "allowedOrigins": [
+            "https://dump-map.netlify.app",
+            "http://localhost:5173"
+          ],
+          "allowedHeaders": [
+            "Content-Type",
+            "Authorization"
+          ],
+          "allowedMethods": [
+            "GET",
+            "POST",
+            "PUT",
+            "OPTIONS"
+          ]
+        }
+      },
       "environment": {
         "REPORTS_TABLE": "dumpmap-backend-dev-reports",
         "UPLOAD_BUCKET": "dumpmap-backend-dev-uploads-984844735243"
@@ -220,7 +238,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/dumpmap-backend/dev/1791552167166-2026-10-09T13:22:47.166Z/dumpmap-backend.zip"
+                "S3Key": "serverless/dumpmap-backend/dev/1791553301074-2026-10-09T13:41:41.074Z/dumpmap-backend.zip"
               },
               "Handler": "src/handlers.getUploadUrl",
               "Runtime": "nodejs18.x",
@@ -251,7 +269,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/dumpmap-backend/dev/1791552167166-2026-10-09T13:22:47.166Z/dumpmap-backend.zip"
+                "S3Key": "serverless/dumpmap-backend/dev/1791553301074-2026-10-09T13:41:41.074Z/dumpmap-backend.zip"
               },
               "Handler": "src/handlers.createReport",
               "Runtime": "nodejs18.x",
@@ -282,7 +300,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/dumpmap-backend/dev/1791552167166-2026-10-09T13:22:47.166Z/dumpmap-backend.zip"
+                "S3Key": "serverless/dumpmap-backend/dev/1791553301074-2026-10-09T13:41:41.074Z/dumpmap-backend.zip"
               },
               "Handler": "src/handlers.getReports",
               "Runtime": "nodejs18.x",
@@ -340,7 +358,23 @@
             "Type": "AWS::ApiGatewayV2::Api",
             "Properties": {
               "Name": "dev-dumpmap-backend",
-              "ProtocolType": "HTTP"
+              "ProtocolType": "HTTP",
+              "CorsConfiguration": {
+                "AllowHeaders": [
+                  "Content-Type",
+                  "Authorization"
+                ],
+                "AllowMethods": [
+                  "GET",
+                  "POST",
+                  "PUT",
+                  "OPTIONS"
+                ],
+                "AllowOrigins": [
+                  "https://dump-map.netlify.app",
+                  "http://localhost:5173"
+                ]
+              }
             }
           },
           "HttpApiStage": {
@@ -901,7 +935,7 @@
     "artifact": "C:\\Users\\mahen\\Desktop\\DumpMap\\backend\\.serverless\\dumpmap-backend.zip"
   },
   "package": {
-    "artifactDirectoryName": "serverless/dumpmap-backend/dev/1791552167166-2026-10-09T13:22:47.166Z",
+    "artifactDirectoryName": "serverless/dumpmap-backend/dev/1791553301074-2026-10-09T13:41:41.074Z",
     "artifact": "dumpmap-backend.zip"
   }
 }

@@ -6,6 +6,19 @@ provider:
   name: aws
   runtime: nodejs18.x
   region: us-east-1
+  httpApi:
+    cors:
+      allowedOrigins:
+        - https://dump-map.netlify.app
+        - http://localhost:5173
+      allowedHeaders:
+        - Content-Type
+        - Authorization
+      allowedMethods:
+        - GET
+        - POST
+        - PUT
+        - OPTIONS
   environment:
     REPORTS_TABLE: ${self:service}-${sls:stage}-reports
     UPLOAD_BUCKET: ${self:service}-${sls:stage}-uploads-${aws:accountId}
