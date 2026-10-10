@@ -133,8 +133,8 @@ const MapView = () => {
       try {
         const response = await fetch('https://9y9e6wstgh.execute-api.us-east-1.amazonaws.com/reports');
         const data = await response.json();
-        // Only show active hotspots, remove resolved ones
-        const activeHotspots = (data.reports || []).filter(report => report.status !== 'resolved');
+        // Only show active hotspots, remove resolved and rejected ones
+        const activeHotspots = (data.reports || []).filter(report => report.status !== 'resolved' && report.status !== 'rejected');
         setHotspots(activeHotspots);
       } catch (err) {
         console.error("Failed to fetch reports for map", err);

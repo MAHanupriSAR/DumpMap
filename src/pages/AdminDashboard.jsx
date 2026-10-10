@@ -39,7 +39,7 @@ const AdminDashboard = () => {
   }, []);
 
   // Compute analytics
-  const activeReports = reports.filter(r => r.status !== 'resolved');
+  const activeReports = reports.filter(r => r.status !== 'resolved' && r.status !== 'rejected');
   const criticalReports = activeReports.filter(r => r.criticality === 'high');
   
   // Group by location to simulate "Hotspots" (rudimentary grouping by string)
@@ -85,7 +85,7 @@ const AdminDashboard = () => {
                 <BarChart3 size={24} />
               </div>
               <div className="stat-data">
-                <span className="stat-value">{reports.length}</span>
+                <span className="stat-value">{reports.filter(r => r.status !== 'rejected').length}</span>
                 <span className="stat-label">Total Reports</span>
               </div>
             </div>
