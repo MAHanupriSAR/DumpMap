@@ -31,7 +31,12 @@ provider:
             - dynamodb:Scan
             - dynamodb:GetItem
             - dynamodb:Query
+            - dynamodb:UpdateItem
           Resource: "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:provider.environment.REPORTS_TABLE}"
+        - Effect: Allow
+          Action:
+            - rekognition:DetectLabels
+          Resource: "*"
         - Effect: Allow
           Action:
             - s3:PutObject
@@ -61,6 +66,17 @@ functions:
           path: /reports
           method: get
 
+  verifyImage:
+    handler: src/handlers.verifyImage
+    events:
+      - stream:
+          type: dynamodb
+          arn:
+            Fn::GetAtt:
+              - ReportsTable
+              - StreamArn
+          startingPosition: LATEST
+
 resources:
   Resources:
     ReportsTable:
@@ -74,6 +90,8 @@ resources:
           - AttributeName: id
             KeyType: HASH
         BillingMode: PAY_PER_REQUEST
+        StreamSpecification:
+          StreamViewType: NEW_AND_OLD_IMAGES
 
     UploadBucket:
       Type: AWS::S3::Bucket

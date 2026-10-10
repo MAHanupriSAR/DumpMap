@@ -89,6 +89,12 @@
         "LogGroupName": "/aws/lambda/dumpmap-backend-dev-getReports"
       }
     },
+    "VerifyImageLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/dumpmap-backend-dev-verifyImage"
+      }
+    },
     "IamRoleLambdaExecution": {
       "Type": "AWS::IAM::Role",
       "Properties": {
@@ -153,9 +159,17 @@
                     "dynamodb:PutItem",
                     "dynamodb:Scan",
                     "dynamodb:GetItem",
-                    "dynamodb:Query"
+                    "dynamodb:Query",
+                    "dynamodb:UpdateItem"
                   ],
                   "Resource": "arn:aws:dynamodb:us-east-1:984844735243:table/dumpmap-backend-dev-reports"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "rekognition:DetectLabels"
+                  ],
+                  "Resource": "*"
                 },
                 {
                   "Effect": "Allow",
@@ -164,6 +178,23 @@
                     "s3:GetObject"
                   ],
                   "Resource": "arn:aws:s3:::dumpmap-backend-dev-uploads-984844735243/*"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "dynamodb:GetRecords",
+                    "dynamodb:GetShardIterator",
+                    "dynamodb:DescribeStream",
+                    "dynamodb:ListStreams"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::GetAtt": [
+                        "ReportsTable",
+                        "StreamArn"
+                      ]
+                    }
+                  ]
                 }
               ]
             }
@@ -192,7 +223,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/dumpmap-backend/dev/1791580039883-2026-10-09T21:07:19.883Z/dumpmap-backend.zip"
+          "S3Key": "serverless/dumpmap-backend/dev/1791611261190-2026-10-10T05:47:41.190Z/dumpmap-backend.zip"
         },
         "Handler": "src/handlers.getUploadUrl",
         "Runtime": "nodejs18.x",
@@ -223,7 +254,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/dumpmap-backend/dev/1791580039883-2026-10-09T21:07:19.883Z/dumpmap-backend.zip"
+          "S3Key": "serverless/dumpmap-backend/dev/1791611261190-2026-10-10T05:47:41.190Z/dumpmap-backend.zip"
         },
         "Handler": "src/handlers.createReport",
         "Runtime": "nodejs18.x",
@@ -254,7 +285,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/dumpmap-backend/dev/1791580039883-2026-10-09T21:07:19.883Z/dumpmap-backend.zip"
+          "S3Key": "serverless/dumpmap-backend/dev/1791611261190-2026-10-10T05:47:41.190Z/dumpmap-backend.zip"
         },
         "Handler": "src/handlers.getReports",
         "Runtime": "nodejs18.x",
@@ -278,34 +309,98 @@
         "GetReportsLogGroup"
       ]
     },
-    "GetUploadUrlLambdaVersionfpXxT1YlcvDULrornuPO3MhmW9qXkSwChQhkLeZzPk": {
+    "VerifyImageLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/dumpmap-backend/dev/1791611261190-2026-10-10T05:47:41.190Z/dumpmap-backend.zip"
+        },
+        "Handler": "src/handlers.verifyImage",
+        "Runtime": "nodejs18.x",
+        "FunctionName": "dumpmap-backend-dev-verifyImage",
+        "MemorySize": 1024,
+        "Timeout": 6,
+        "Environment": {
+          "Variables": {
+            "REPORTS_TABLE": "dumpmap-backend-dev-reports",
+            "UPLOAD_BUCKET": "dumpmap-backend-dev-uploads-984844735243"
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        }
+      },
+      "DependsOn": [
+        "VerifyImageLogGroup"
+      ]
+    },
+    "GetUploadUrlLambdaVersion7LjFh6ANnfdOPBqxYZyCeFc0qDO1tNyVc1CvWh3tFw": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "GetUploadUrlLambdaFunction"
         },
-        "CodeSha256": "nT6EiwuFAQdOa78J3TfV1qefXtadqkr/MeuGa/KDw1Q="
+        "CodeSha256": "IaIghDN1wo4KoxXwM9to1prXifQpIAJLr9/xnA11R4E="
       }
     },
-    "CreateReportLambdaVersionQ4yaJzrmNStVvGrFq6zUQP9a3rgauOJrwIZZFgQc": {
+    "CreateReportLambdaVersionn2ZgPjJ9nkMwzOA34AwMJZ4FZdJsmCRwgWsMSj4cAk": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "CreateReportLambdaFunction"
         },
-        "CodeSha256": "nT6EiwuFAQdOa78J3TfV1qefXtadqkr/MeuGa/KDw1Q="
+        "CodeSha256": "IaIghDN1wo4KoxXwM9to1prXifQpIAJLr9/xnA11R4E="
       }
     },
-    "GetReportsLambdaVersionXLoKk6nX4844ElyykYMztIdhFru97VDOfTGrkKIVNc4": {
+    "GetReportsLambdaVersionZAIoopWG0dgYt5Tn7cE5FJXPZSjYAMHQ0fXlkcrds": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "GetReportsLambdaFunction"
         },
-        "CodeSha256": "nT6EiwuFAQdOa78J3TfV1qefXtadqkr/MeuGa/KDw1Q="
+        "CodeSha256": "IaIghDN1wo4KoxXwM9to1prXifQpIAJLr9/xnA11R4E="
+      }
+    },
+    "VerifyImageLambdaVersionj1KxCkbVcgSLT7zGvYEJC2idmApwQvLdiFOaAzvJzo": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "VerifyImageLambdaFunction"
+        },
+        "CodeSha256": "IaIghDN1wo4KoxXwM9to1prXifQpIAJLr9/xnA11R4E="
+      }
+    },
+    "VerifyImageEventSourceMappingDynamodbReportsTable": {
+      "Type": "AWS::Lambda::EventSourceMapping",
+      "DependsOn": [
+        "IamRoleLambdaExecution"
+      ],
+      "Properties": {
+        "BatchSize": 10,
+        "Enabled": true,
+        "EventSourceArn": {
+          "Fn::GetAtt": [
+            "ReportsTable",
+            "StreamArn"
+          ]
+        },
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "VerifyImageLambdaFunction",
+            "Arn"
+          ]
+        },
+        "StartingPosition": "LATEST"
       }
     },
     "HttpApi": {
@@ -585,7 +680,10 @@
             "KeyType": "HASH"
           }
         ],
-        "BillingMode": "PAY_PER_REQUEST"
+        "BillingMode": "PAY_PER_REQUEST",
+        "StreamSpecification": {
+          "StreamViewType": "NEW_AND_OLD_IMAGES"
+        }
       }
     },
     "UploadBucket": {
@@ -662,7 +760,7 @@
     "GetUploadUrlLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "GetUploadUrlLambdaVersionfpXxT1YlcvDULrornuPO3MhmW9qXkSwChQhkLeZzPk"
+        "Ref": "GetUploadUrlLambdaVersion7LjFh6ANnfdOPBqxYZyCeFc0qDO1tNyVc1CvWh3tFw"
       },
       "Export": {
         "Name": "sls-dumpmap-backend-dev-GetUploadUrlLambdaFunctionQualifiedArn"
@@ -671,7 +769,7 @@
     "CreateReportLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "CreateReportLambdaVersionQ4yaJzrmNStVvGrFq6zUQP9a3rgauOJrwIZZFgQc"
+        "Ref": "CreateReportLambdaVersionn2ZgPjJ9nkMwzOA34AwMJZ4FZdJsmCRwgWsMSj4cAk"
       },
       "Export": {
         "Name": "sls-dumpmap-backend-dev-CreateReportLambdaFunctionQualifiedArn"
@@ -680,10 +778,19 @@
     "GetReportsLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "GetReportsLambdaVersionXLoKk6nX4844ElyykYMztIdhFru97VDOfTGrkKIVNc4"
+        "Ref": "GetReportsLambdaVersionZAIoopWG0dgYt5Tn7cE5FJXPZSjYAMHQ0fXlkcrds"
       },
       "Export": {
         "Name": "sls-dumpmap-backend-dev-GetReportsLambdaFunctionQualifiedArn"
+      }
+    },
+    "VerifyImageLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "VerifyImageLambdaVersionj1KxCkbVcgSLT7zGvYEJC2idmApwQvLdiFOaAzvJzo"
+      },
+      "Export": {
+        "Name": "sls-dumpmap-backend-dev-VerifyImageLambdaFunctionQualifiedArn"
       }
     },
     "HttpApiId": {

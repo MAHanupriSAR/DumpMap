@@ -676,16 +676,17 @@ const ReportWaste = () => {
       {step < 6 && (
         <footer className="report-footer">
           <button 
-            className={`btn block-btn ${step === 2 && !photoPreview ? 'secondary-btn' : 'primary-btn'}`}
+            className="btn block-btn primary-btn"
             onClick={step === 5 ? submitReport : handleNext}
             disabled={
               (step === 1 && !formData.location) ||
+              (step === 2 && !photoPreview) ||
               (step === 3 && (!formData.type || !formData.amount)) ||
               isSubmitting
             }
           >
             {step === 5 ? (isSubmitting ? 'Submitting...' : 'Submit Report') : 
-             step === 2 && !photoPreview ? 'Skip for now' : 
+             step === 2 && !photoPreview ? 'Photo Required' : 
              'Continue'}
           </button>
         </footer>

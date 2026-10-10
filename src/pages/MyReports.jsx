@@ -77,15 +77,20 @@ const MyReports = () => {
               </div>
               
               <div className="report-status-badge">
-                {report.status === 'pending' ? (
-                  <div className="status pending">
-                    <Clock size={16} />
-                    <span>Cleanup pending</span>
+                {report.status === 'rejected' ? (
+                  <div className="status rejected">
+                    <AlertTriangle size={16} />
+                    <span>Rejected</span>
                   </div>
-                ) : (
+                ) : report.status === 'resolved' ? (
                   <div className="status resolved">
                     <CheckCircle size={16} />
                     <span>Resolved</span>
+                  </div>
+                ) : (
+                  <div className="status pending">
+                    <Clock size={16} />
+                    <span>{report.status === 'pending' ? 'Verifying...' : 'Cleanup pending'}</span>
                   </div>
                 )}
               </div>
@@ -115,8 +120,10 @@ const MyReports = () => {
 
                 <div className="status-timeline">
                   {report.timeline.map((step, index) => (
-                    <div key={index} className={`timeline-item ${step.completed ? 'active' : ''}`}>
-                      <div className="timeline-dot"></div>
+                    <div key={index} className={`timeline-item ${step.completed ? 'active' : ''} ${step.failed ? 'failed' : ''}`}>
+                      <div className="timeline-dot">
+                        {step.failed && <span className="failed-x">×</span>}
+                      </div>
                       <span>{step.status}</span>
                     </div>
                   ))}

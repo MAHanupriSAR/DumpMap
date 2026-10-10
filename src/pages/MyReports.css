@@ -107,6 +107,10 @@
   color: #10B981;
 }
 
+.status.rejected {
+  color: #EF4444;
+}
+
 .expand-icon {
   margin-left: 12px;
   transition: transform 0.3s ease;
@@ -195,4 +199,24 @@
 .report-details-content .timeline-item.active .timeline-dot {
   border-color: #5FBD5F;
   background-color: #5FBD5F;
+}
+
+.report-details-content .timeline-item.failed {
+  color: #EF4444;
+  font-weight: 600;
+}
+
+.report-details-content .timeline-item.failed .timeline-dot {
+  border-color: #EF4444;
+  background-color: #FEF2F2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.failed-x {
+  color: #EF4444;
+  font-size: 14px;
+  line-height: 1;
+  font-weight: bold;
 }
