@@ -365,6 +365,8 @@ module.exports.verifyWorker = async (event) => {
       name: (workerItem && workerItem.name) || cleanEmail.split('@')[0],
       workerId: (workerItem && workerItem.workerId) || 'STAFF-' + cleanEmail.split('@')[0],
       zone: (workerItem && workerItem.zone) || 'Municipal Zone',
+      latitude: (workerItem && workerItem.latitude) || 28.7041,
+      longitude: (workerItem && workerItem.longitude) || 77.1025,
       email: cleanEmail,
     };
 
@@ -374,6 +376,8 @@ module.exports.verifyWorker = async (event) => {
       name: workerProfile.name,
       workerId: workerProfile.workerId,
       zone: workerProfile.zone,
+      latitude: workerProfile.latitude,
+      longitude: workerProfile.longitude,
       email: workerProfile.email,
       tokens: {
         idToken: authResult.IdToken,
@@ -387,3 +391,88 @@ module.exports.verifyWorker = async (event) => {
     return createResponse(500, { error: 'Worker login failed. Please try again.' });
   }
 };
+
+// Pre-seeded Delhi municipal worker directory with latitude and longitude (backend stores lat/long)
+const DEFAULT_DELHI_WORKERS = {
+  'worker1@dumpmap.gov': {
+    name: 'Ramesh Kumar',
+    workerId: 'STAFF-001',
+    zone: 'North Delhi',
+    latitude: 28.7041,
+    longitude: 77.1025,
+  },
+  'worker2@dumpmap.gov': {
+    name: 'Suresh Sharma',
+    workerId: 'STAFF-002',
+    zone: 'South Delhi',
+    latitude: 28.5355,
+    longitude: 77.2090,
+  },
+  'worker3@dumpmap.gov': {
+    name: 'Priya Verma',
+    workerId: 'STAFF-003',
+    zone: 'East Delhi',
+    latitude: 28.6280,
+    longitude: 77.2950,
+  },
+  'staff@dumpmap.gov': {
+    name: 'Municipal Operations Lead',
+    workerId: 'STAFF-000',
+    zone: 'Central Delhi',
+    latitude: 28.6304,
+    longitude: 77.2177,
+  },
+};
+
+// GET /worker-profile: Fetches crew profile by email with coordinates (stored as lat/long on backend)
+module.exports.getWorkerProfile = async (event) => {
+  try {
+    const email = event.queryStringParameters?.email;
+    if (!email) {
+      return createResponse(400, { error: 'Worker email parameter is required.' });
+    }
+    const cleanEmail = email.toLowerCase().trim();
+
+    let workerData = DEFAULT_DELHI_WORKERS[cleanEmail];
+
+    if (WORKERS_TABLE) {
+      try {
+        const dbResult = await docClient.send(new GetCommand({
+          TableName: WORKERS_TABLE,
+          Key: { email: cleanEmail },
+        }));
+        if (dbResult.Item) {
+          workerData = {
+            ...workerData,
+            ...dbResult.Item,
+          };
+        }
+      } catch (dbErr) {
+        console.warn('Could not query WORKERS_TABLE:', dbErr);
+      }
+    }
+
+    if (!workerData) {
+      workerData = {
+        name: cleanEmail.split('@')[0],
+        workerId: 'STAFF-' + cleanEmail.split('@')[0].toUpperCase(),
+        zone: 'Central Delhi',
+        latitude: 28.6304,
+        longitude: 77.2177,
+      };
+    }
+
+    return createResponse(200, {
+      name: workerData.name,
+      email: cleanEmail,
+      workerId: workerData.workerId,
+      zone: workerData.zone,
+      latitude: Number(workerData.latitude),
+      longitude: Number(workerData.longitude),
+    });
+  } catch (error) {
+    console.error('Error in getWorkerProfile:', error);
+    return createResponse(500, { error: 'Failed to retrieve worker profile.' });
+  }
+};
+

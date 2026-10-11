@@ -97,6 +97,13 @@ functions:
           path: /verify-worker
           method: post
 
+  getWorkerProfile:
+    handler: src/handlers.getWorkerProfile
+    events:
+      - httpApi:
+          path: /worker-profile
+          method: get
+
   verifyImage:
     handler: src/handlers.verifyImage
     events:

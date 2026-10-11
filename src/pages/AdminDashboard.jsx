@@ -1,8 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from 'react-leaflet';
-import { AlertTriangle, CheckCircle, BarChart3, Map as MapIcon, AlertOctagon, Clock, LogOut, MapPin, ExternalLink, Camera, UploadCloud, Loader2, Image as ImageIcon } from 'lucide-react';
+import { AlertTriangle, CheckCircle, BarChart3, Map as MapIcon, AlertOctagon, Clock, LogOut, MapPin, ExternalLink, Camera, UploadCloud, Loader2, Image as ImageIcon, User } from 'lucide-react';
 import { useAuth } from 'react-oidc-context';
 import { signOutCognito } from '../authConfig';
+import CrewProfileModal from '../components/CrewProfileModal';
+import { fetchWorkerProfile } from '../services/workerProfile';
 import './AdminDashboard.css';
 
 const RecenterMap = ({ lat, lng, zoom = 16 }) => {
@@ -54,6 +56,10 @@ const AdminDashboard = () => {
   const [isSubmittingResolution, setIsSubmittingResolution] = useState(false);
   const [resolutionError, setResolutionError] = useState('');
   
+  // Crew profile state
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [workerProfile, setWorkerProfile] = useState(null);
+  
   // Staff identity comes from Cognito user profile, municipal registry, or fallback
   const user = auth.user?.profile;
   const workerEmail = user?.email || localStorage.getItem('workerEmail') || 'staff@dumpmap.gov';
@@ -80,6 +86,23 @@ const AdminDashboard = () => {
   }, [workerName, workerZone]);
 
   const userId = workerEmail;
+
+  // Fetch full crew profile details from backend/directory on sign in
+  useEffect(() => {
+    let isMounted = true;
+    const loadProfile = async () => {
+      try {
+        const prof = await fetchWorkerProfile(workerEmail);
+        if (isMounted && prof) {
+          setWorkerProfile(prof);
+        }
+      } catch (err) {
+        console.warn('Failed to fetch worker profile:', err);
+      }
+    };
+    loadProfile();
+    return () => { isMounted = false; };
+  }, [workerEmail]);
 
   const handleLogout = () => {
     signOutCognito(auth);
@@ -226,8 +249,16 @@ const AdminDashboard = () => {
             <h1>Staff Dashboard</h1>
             <p>Task Assignment & Resolution Matrix {workerZone ? `· ${workerZone}` : ''}</p>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <span style={{ fontSize: '0.9rem', color: '#64748B', fontWeight: 500 }}>{workerName}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <button
+              className="export-btn crew-view-profile-btn"
+              onClick={() => setShowProfileModal(true)}
+              style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#0F172A', borderColor: '#CBD5E1', cursor: 'pointer' }}
+              title="View your municipal worker profile"
+            >
+              <User size={15} color="#10B981" />
+              <span>View Profile</span>
+            </button>
             <button className="export-btn" onClick={handleLogout} style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#EF4444', borderColor: '#FECACA' }}>
               <LogOut size={15} /> Logout
             </button>
@@ -641,6 +672,23 @@ const AdminDashboard = () => {
             </form>
           </div>
         </div>
+      )}
+
+      {/* CREW PROFILE MODAL */}
+      {showProfileModal && (
+        <CrewProfileModal
+          profile={workerProfile || {
+            name: workerName,
+            email: workerEmail,
+            zone: workerZone,
+            workerId: 'STAFF-001',
+            latitude: 28.7041,
+            longitude: 77.1025,
+            address: 'Sector 14, Rohini, North Delhi, Delhi 110085'
+          }}
+          onClose={() => setShowProfileModal(false)}
+          onSignOut={handleLogout}
+        />
       )}
     </div>
   );

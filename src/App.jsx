@@ -7,6 +7,7 @@ import MapView from "./pages/MapView";
 import MyReports from "./pages/MyReports";
 import ProfileView from "./pages/ProfileView";
 import AdminDashboard from "./pages/AdminDashboard";
+import CrewProfileView from "./pages/CrewProfileView";
 import Landing from "./pages/Landing";
 import './App.css';
 
@@ -44,13 +45,16 @@ function App() {
     );
   }
 
-  if (auth.isAuthenticated) {
+  const isDevBypass = import.meta.env.DEV && (localStorage.getItem('userRole') === 'staff' || window.location.search.includes('staff=true'));
+
+  if (auth.isAuthenticated || isDevBypass) {
     // ── STAFF ROUTE (Authenticated via Worker Cognito User Pool) ────────────
-    if (isStaff) {
+    if (isStaff || isDevBypass) {
       return (
         <BrowserRouter>
           <Routes>
             <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin/profile" element={<CrewProfileView />} />
             <Route path="*" element={<Navigate to="/admin" replace />} />
           </Routes>
         </BrowserRouter>

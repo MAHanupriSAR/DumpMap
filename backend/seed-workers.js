@@ -20,6 +20,8 @@ const WORKERS = [
     name: 'Ramesh Kumar',
     workerId: 'STAFF-001',
     zone: 'North Delhi',
+    latitude: 28.7041,
+    longitude: 77.1025,
     role: 'staff',
   },
   {
@@ -27,6 +29,8 @@ const WORKERS = [
     name: 'Suresh Sharma',
     workerId: 'STAFF-002',
     zone: 'South Delhi',
+    latitude: 28.5355,
+    longitude: 77.2090,
     role: 'staff',
   },
   {
@@ -34,6 +38,8 @@ const WORKERS = [
     name: 'Priya Verma',
     workerId: 'STAFF-003',
     zone: 'East Delhi',
+    latitude: 28.6280,
+    longitude: 77.2950,
     role: 'staff',
   },
 ];
