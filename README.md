@@ -1,5 +1,9 @@
 # DumpMap
 
+Demo credetials for workers side:
+worker1@dumpmap.gov
+Worker@123
+
 > **An AI-Powered, Real-Time Municipal Waste Tracking, Verification & Resolution Platform.**
 
 DumpMap connects citizens and municipal sanitation crews to eliminate illegal dumping, streamline civic cleanup operations, and verify waste remediation through automated computer vision and photographic proof-of-work.

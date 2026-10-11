@@ -43,10 +43,16 @@ const RecenterMap = ({ lat, lng, zoom = 16 }) => {
   useEffect(() => {
     if (!isNaN(lat) && !isNaN(lng)) {
       map.setView([lat, lng], zoom);
-      setTimeout(() => {
-        map.invalidateSize();
-      }, 150);
     }
+    const timer = setTimeout(() => {
+      map.invalidateSize();
+    }, 150);
+    const onResize = () => map.invalidateSize();
+    window.addEventListener('resize', onResize);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('resize', onResize);
+    };
   }, [lat, lng, zoom, map]);
   return null;
 };
