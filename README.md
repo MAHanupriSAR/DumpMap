@@ -1,4 +1,4 @@
-# 🌍 DumpMap
+# DumpMap
 
 > **An AI-Powered, Real-Time Municipal Waste Tracking, Verification & Resolution Platform.**
 
@@ -11,30 +11,30 @@ DumpMap connects citizens and municipal sanitation crews to eliminate illegal du
 
 ---
 
-## 📌 Table of Contents
-- [System Architecture](#-system-architecture)
-- [Key Features](#-key-features)
+## Table of Contents
+- [System Architecture](#system-architecture)
+- [Key Features](#key-features)
   - [1. Citizen Experience](#1-citizen-experience)
   - [2. Municipal Staff & Field Crew Experience](#2-municipal-staff--field-crew-experience)
   - [3. AI Verification & Triage](#3-ai-verification--triage)
-- [Architecture & Workflow Diagrams](#-architecture--workflow-diagrams)
+- [Architecture & Workflow Diagrams](#architecture--workflow-diagrams)
   - [System Flow & Cloud Architecture](#system-flow--cloud-architecture)
   - [End-to-End Incident Lifecycle](#end-to-end-incident-lifecycle)
-- [Tech Stack Details](#-tech-stack-details)
-- [Data Models & Schema](#-data-models--schema)
+- [Tech Stack Details](#tech-stack-details)
+- [Data Models & Schema](#data-models--schema)
   - [Reports Table (`dumpmap-backend-dev-reports`)](#reports-table)
   - [Workers Table (`dumpmap-backend-dev-workers`)](#workers-table)
-- [API Reference](#-api-reference)
-- [Authentication Architecture (Dual Cognito Pools)](#-authentication-architecture-dual-cognito-pools)
-- [Deployment Guide](#-deployment-guide)
+- [API Reference](#api-reference)
+- [Authentication Architecture (Dual Cognito Pools)](#authentication-architecture-dual-cognito-pools)
+- [Deployment Guide](#deployment-guide)
   - [Deploying the Serverless Backend](#deploying-the-serverless-backend)
   - [Deploying the Frontend to AWS Amplify](#deploying-the-frontend-to-aws-amplify)
-- [Local Development Setup](#-local-development-setup)
-- [License](#-license)
+- [Local Development Setup](#local-development-setup)
+- [License](#license)
 
 ---
 
-## 🏛 System Architecture
+## System Architecture
 
 DumpMap employs a cloud-native, 100% serverless event-driven architecture designed for high availability, zero idle cost, and horizontal scalability.
 
@@ -103,12 +103,12 @@ graph TB
 
 ---
 
-## 🚀 Key Features
+## Key Features
 
 ### 1. Citizen Experience
 - **Interactive 5-Step Waste Reporting**: Mobile-optimized flow to document location, waste category (plastic, wet, hazardous, debris), amount, urgency flags, and photographic evidence.
 - **Precision Geolocation**: Built on Leaflet and OpenStreetMap with interactive reverse-geocoded map pinning and coordinate tracking.
-- **Live Status Timeline**: Transparent tracking displaying incident milestones: `Reported` $\rightarrow$ `Verified` $\rightarrow$ `Accepted by Crew` $\rightarrow$ `Resolved`.
+- **Live Status Timeline**: Transparent tracking displaying incident milestones: `Reported` -> `Verified` -> `Accepted by Crew` -> `Resolved`.
 - **Proof-of-Work Verification**: Once a municipal crew resolves the task, citizens can view the **Worker's Proof of Cleanup Photo**, worker notes, resolution timestamp, and service crew attribution directly in their card details.
 
 ### 2. Municipal Staff & Field Crew Experience
@@ -127,21 +127,21 @@ graph TB
 
 ---
 
-## 🔄 Architecture & Workflow Diagrams
+## Architecture & Workflow Diagrams
 
 ### System Flow & Cloud Architecture
 
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Citizen as 👤 Citizen
-    participant Client as 💻 DumpMap Frontend
-    participant S3 as 🪣 Amazon S3
-    participant API as 🌐 API Gateway
-    participant Lambda as ⚡ AWS Lambda
-    participant DDB as 🗄️ DynamoDB
-    participant Rek as 🧠 AWS Rekognition
-    actor Worker as 👷 Municipal Worker
+    actor Citizen as Citizen
+    participant Client as DumpMap Frontend
+    participant S3 as Amazon S3
+    participant API as API Gateway
+    participant Lambda as AWS Lambda
+    participant DDB as DynamoDB
+    participant Rek as AWS Rekognition
+    actor Worker as Municipal Worker
 
     Citizen->>Client: Takes photo & fills report
     Client->>API: GET /upload-url?filename=photo.jpg
@@ -183,7 +183,7 @@ sequenceDiagram
 
 ---
 
-## 🛠 Tech Stack Details
+## Tech Stack Details
 
 | Layer | Technologies | Purpose |
 | :--- | :--- | :--- |
@@ -201,7 +201,7 @@ sequenceDiagram
 
 ---
 
-## 🗄 Data Models & Schema
+## Data Models & Schema
 
 ### Reports Table
 `dumpmap-backend-dev-reports` &bull; **Partition Key:** `id` (String / UUID)
@@ -250,7 +250,7 @@ sequenceDiagram
 
 ---
 
-## 🔌 API Reference
+## API Reference
 
 **Base URL:** `https://9y9e6wstgh.execute-api.us-east-1.amazonaws.com`
 
@@ -264,7 +264,7 @@ sequenceDiagram
 
 ---
 
-## 🔐 Authentication Architecture (Dual Cognito Pools)
+## Authentication Architecture (Dual Cognito Pools)
 
 DumpMap strictly separates public citizen accounts from municipal authority credentials:
 
@@ -282,7 +282,7 @@ graph LR
 
     subgraph StaffPool["Worker User Pool (ap-south-1_e362DPLy7)"]
         S_Auth["Cognito Managed Login"]
-        S_NoSignUp["🚫 Sign-Up Disabled\nAdmin Provisioned Only"]
+        S_NoSignUp["Sign-Up Disabled\nAdmin Provisioned Only"]
         S_Role["Role: Municipal Staff"]
     end
 
@@ -300,7 +300,7 @@ graph LR
 
 ---
 
-## 🚢 Deployment Guide
+## Deployment Guide
 
 ### Deploying the Serverless Backend
 1. Clone the repository:
@@ -322,8 +322,8 @@ graph LR
    ```
 
 ### Deploying the Frontend to AWS Amplify
-1. Open the [AWS Amplify Console](https://console.aws.amazon.com/amplify/home).
-2. Click **Deploy an app** $\rightarrow$ select **GitHub** $\rightarrow$ select repository `MAHanupriSAR/DumpMap` and branch `main`.
+1. Open the AWS Amplify Console.
+2. Click **Deploy an app** -> select **GitHub** -> select repository `MAHanupriSAR/DumpMap` and branch `main`.
 3. Accept the default build settings:
    - Build command: `npm run build`
    - Output directory: `dist`
@@ -345,7 +345,7 @@ graph LR
 
 ---
 
-## 💻 Local Development Setup
+## Local Development Setup
 
 ### Prerequisites
 - Node.js 18+
@@ -368,5 +368,5 @@ Open `http://localhost:5173` in your browser.
 
 ---
 
-## 📄 License
+## License
 This project is open-source and licensed under the [MIT License](LICENSE).
