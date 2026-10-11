@@ -6,7 +6,7 @@ export const citizenAuthConfig = {
   client_id: "55dht6jg5ta3c3heobhneh5na8",
   redirect_uri: window.location.origin,
   response_type: "code",
-  scope: "email openid phone",
+  scope: "email openid phone profile",
 };
 
 // ── WORKER USER POOL (Self-registration disabled, NO signup button) ─────────
@@ -15,7 +15,7 @@ export const workerAuthConfig = {
   client_id: "40k8du3o5djge7mbasnftrcm7m",
   redirect_uri: window.location.origin,
   response_type: "code",
-  scope: "email openid phone",
+  scope: "email openid phone profile",
 };
 
 export const citizenUserManager = new UserManager(citizenAuthConfig);

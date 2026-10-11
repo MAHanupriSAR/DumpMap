@@ -32,6 +32,13 @@ const formatTimeAgo = (isoString) => {
   return `${diffDays} days ago`;
 };
 
+// Pre-seeded municipal staff directory (matches DynamoDB & Cognito authorized staff)
+const KNOWN_WORKERS = {
+  'worker1@dumpmap.gov': { name: 'Ramesh Kumar', zone: 'North Delhi' },
+  'worker2@dumpmap.gov': { name: 'Suresh Sharma', zone: 'South Delhi' },
+  'worker3@dumpmap.gov': { name: 'Priya Verma', zone: 'East Delhi' }
+};
+
 const AdminDashboard = () => {
   const auth = useAuth();
   const [reports, setReports] = useState([]);
@@ -47,12 +54,32 @@ const AdminDashboard = () => {
   const [isSubmittingResolution, setIsSubmittingResolution] = useState(false);
   const [resolutionError, setResolutionError] = useState('');
   
-  // Staff identity comes from Cognito user profile or fallback
+  // Staff identity comes from Cognito user profile, municipal registry, or fallback
   const user = auth.user?.profile;
   const workerEmail = user?.email || localStorage.getItem('workerEmail') || 'staff@dumpmap.gov';
-  const workerName = user?.name || localStorage.getItem('workerName') || workerEmail.split('@')[0];
+  const matchedWorker = KNOWN_WORKERS[workerEmail?.toLowerCase()];
+
+  const storedName = localStorage.getItem('workerName');
+  const isGenericUsername = !storedName || ['worker1', 'worker2', 'worker3', 'staff'].includes(storedName.toLowerCase()) || storedName === workerEmail.split('@')[0];
+
+  const workerName = user?.name 
+    || (!isGenericUsername ? storedName : null)
+    || matchedWorker?.name 
+    || (workerEmail.includes('@') ? workerEmail.split('@')[0] : workerEmail);
+
+  const workerZone = user?.zone 
+    || localStorage.getItem('workerZone') 
+    || matchedWorker?.zone 
+    || 'Municipal Zone';
+
+  useEffect(() => {
+    if (workerName && !['worker1', 'worker2', 'worker3', 'staff'].includes(workerName.toLowerCase())) {
+      localStorage.setItem('workerName', workerName);
+      localStorage.setItem('workerZone', workerZone);
+    }
+  }, [workerName, workerZone]);
+
   const userId = workerEmail;
-  const workerZone = localStorage.getItem('workerZone') || 'Municipal Zone';
 
   const handleLogout = () => {
     signOutCognito(auth);
@@ -200,7 +227,7 @@ const AdminDashboard = () => {
             <p>Task Assignment & Resolution Matrix {workerZone ? `· ${workerZone}` : ''}</p>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <span style={{ fontSize: '0.9rem', color: '#64748B', fontWeight: 500 }}>👋 {workerName}</span>
+            <span style={{ fontSize: '0.9rem', color: '#64748B', fontWeight: 500 }}>{workerName}</span>
             <button className="export-btn" onClick={handleLogout} style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#EF4444', borderColor: '#FECACA' }}>
               <LogOut size={15} /> Logout
             </button>
