@@ -24,48 +24,6 @@
   color: #0F172A;
 }
 
-/* ── TOP ANNOUNCEMENT BAR ──────────────────────────────────────────────── */
-.landing-topbar {
-  background: linear-gradient(90deg, #064E3B 0%, #065F46 50%, #047857 100%);
-  color: #FFFFFF;
-  padding: 8px 16px;
-  font-size: 0.82rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.topbar-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.topbar-badge {
-  background-color: #10B981;
-  color: #FFFFFF;
-  font-weight: 700;
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  padding: 2px 8px;
-  border-radius: 12px;
-}
-
-.topbar-text {
-  font-weight: 500;
-  color: #ECFDF5;
-}
-
-.topbar-pill {
-  background-color: rgba(255, 255, 255, 0.15);
-  padding: 2px 8px;
-  border-radius: 10px;
-  font-size: 0.72rem;
-  font-weight: 600;
-}
 
 /* ── STICKY NAVIGATION ─────────────────────────────────────────────────── */
 .landing-nav {
@@ -1084,17 +1042,6 @@
 }
 
 @media (max-width: 768px) {
-  .landing-topbar {
-    padding: 6px 12px;
-  }
-
-  .topbar-text {
-    font-size: 0.74rem;
-  }
-
-  .topbar-pill {
-    display: none;
-  }
 
   .nav-container {
     padding: 10px 16px;

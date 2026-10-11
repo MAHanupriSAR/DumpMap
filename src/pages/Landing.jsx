@@ -33,14 +33,6 @@ const Landing = () => {
 
   return (
     <div className="landing-page">
-      {/* ── TOP ANNOUNCEMENT BAR ─────────────────────────────────── */}
-      <div className="landing-topbar">
-        <div className="topbar-container">
-          <span className="topbar-badge">Live System</span>
-          <span className="topbar-text">AI-Verified Municipal Waste Tracking & Resolution Platform</span>
-          <span className="topbar-pill">AWS Serverless Cloud</span>
-        </div>
-      </div>
 
       {/* ── NAVIGATION HEADER ────────────────────────────────────── */}
       <header className="landing-nav">
