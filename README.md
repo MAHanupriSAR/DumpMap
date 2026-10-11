@@ -45,13 +45,13 @@ graph TB
         SP["Municipal Staff Command Center"]
     end
 
-    subgraph Hosting["Edge & CDN"]
+    subgraph Hosting["Edge and CDN"]
         AMP["AWS Amplify Hosting / Global CDN"]
     end
 
-    subgraph Auth["Identity & Access Management (AWS Cognito)"]
-        CPool["Citizen User Pool\n(Self-Registration Enabled)"]
-        WPool["Worker User Pool\n(Admin Provisioned Only)"]
+    subgraph Auth["Identity and Access Management (AWS Cognito)"]
+        CPool["Citizen User Pool - Self-Registration Enabled"]
+        WPool["Worker User Pool - Admin Provisioned Only"]
     end
 
     subgraph API["API Gateway Layer"]
@@ -65,14 +65,14 @@ graph TB
         L_VER["verifyImage Stream Consumer Lambda"]
     end
 
-    subgraph Storage["Persistence & Storage Layer"]
-        S3["Amazon S3 Bucket\n(Uploads & Cleanup Proofs)"]
-        DDB["Amazon DynamoDB\n(Reports Table + Workers Table)"]
-        DDB_STR["DynamoDB Streams\n(New Report Inserts)"]
+    subgraph Storage["Persistence and Storage Layer"]
+        S3["Amazon S3 Bucket (Uploads and Cleanup Proofs)"]
+        DDB["Amazon DynamoDB (Reports and Workers Tables)"]
+        DDB_STR["DynamoDB Streams (New Report Inserts)"]
     end
 
     subgraph AI["Artificial Intelligence Layer"]
-        REK["AWS Rekognition\n(Computer Vision Label Detection)"]
+        REK["AWS Rekognition (Computer Vision Label Detection)"]
     end
 
     CP --> AMP
@@ -80,8 +80,8 @@ graph TB
     AMP --> CP
     AMP --> SP
 
-    CP -->|Sign In / Up| CPool
-    SP -->|Sign In (No Sign-Up)| WPool
+    CP -->|Sign In or Sign Up| CPool
+    SP -->|Sign In - Provisioned Only| WPool
 
     CP -->|REST API| AGW
     SP -->|REST API| AGW
@@ -92,13 +92,13 @@ graph TB
 
     L_URL -->|Generate Presigned PUT URL| S3
     L_REP -->|Read / Write Incidents| DDB
-    L_STAT -->|Update State & Proof of Work| DDB
+    L_STAT -->|Update State and Proof of Work| DDB
 
     DDB -->|CDC Event Stream| DDB_STR
     DDB_STR --> L_VER
     L_VER -->|Image Analysis| REK
-    REK -->|Garbage Labels & Confidence| L_VER
-    L_VER -->|Auto-Verify / Reject| DDB
+    REK -->|Garbage Labels and Confidence| L_VER
+    L_VER -->|Auto-Verify or Reject| DDB
 ```
 
 ---
@@ -288,15 +288,15 @@ graph LR
         Choice{"User Role Selection"}
     end
 
-    subgraph CitizenPool["Citizen User Pool (ap-south-1_igoGrvGIP)"]
+    subgraph CitizenPool["Citizen User Pool - ap-south-1_igoGrvGIP"]
         C_Auth["Cognito Managed Login"]
-        C_SignUp["Self-Registration (Sign Up)"]
+        C_SignUp["Self-Registration - Sign Up"]
         C_Role["Role: Citizen"]
     end
 
-    subgraph StaffPool["Worker User Pool (ap-south-1_e362DPLy7)"]
+    subgraph StaffPool["Worker User Pool - ap-south-1_e362DPLy7"]
         S_Auth["Cognito Managed Login"]
-        S_NoSignUp["Sign-Up Disabled\nAdmin Provisioned Only"]
+        S_NoSignUp["Sign-Up Disabled - Admin Provisioned Only"]
         S_Role["Role: Municipal Staff"]
     end
 
