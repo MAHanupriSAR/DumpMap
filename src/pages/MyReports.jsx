@@ -105,9 +105,9 @@ const MyReports = () => {
               </div>
             </div>
 
-            {/* Expanded Content (Timeline) */}
+            {/* Expanded Content */}
             <div className="report-details" style={{
-              maxHeight: expandedReportId === report.id ? '500px' : '0',
+              maxHeight: expandedReportId === report.id ? '2000px' : '0',
               opacity: expandedReportId === report.id ? 1 : 0
             }}>
               <div className="report-details-content">
@@ -121,8 +121,63 @@ const MyReports = () => {
                   </div>
                 </div>
                 
-                <p className="report-desc">"{report.description}"</p>
+                {report.description && (
+                  <p className="report-desc">"{report.description}"</p>
+                )}
 
+                {/* WORKER RESOLUTION PROOF (FOR RESOLVED REPORTS) */}
+                {report.status === 'resolved' && (report.proofPhotoUrl || report.proofDescription) && (
+                  <div className="citizen-proof-card" onClick={e => e.stopPropagation()}>
+                    <div className="citizen-proof-header">
+                      <div className="citizen-proof-badge">
+                        <CheckCircle size={16} color="#10B981" />
+                        <span>Cleanup Completed & Verified</span>
+                      </div>
+                      {report.resolvedAt && (
+                        <span className="citizen-proof-date">{formatTime(report.resolvedAt)}</span>
+                      )}
+                    </div>
+
+                    {report.resolvedBy && (
+                      <div className="citizen-proof-worker">
+                        Serviced by: <strong>{report.resolvedBy}</strong>
+                      </div>
+                    )}
+
+                    {report.proofDescription && (
+                      <div className="citizen-proof-note-box">
+                        <span className="citizen-proof-note-label">Worker's Resolution Notes:</span>
+                        <p className="citizen-proof-note-text">"{report.proofDescription}"</p>
+                      </div>
+                    )}
+
+                    {report.proofPhotoUrl && (
+                      <div className="citizen-proof-media">
+                        <div className="citizen-media-tag proof-tag">
+                          <CheckCircle size={13} color="#059669" />
+                          <span>Worker's Proof of Cleanup</span>
+                        </div>
+                        <a href={report.proofPhotoUrl} target="_blank" rel="noopener noreferrer" title="Click to view full image">
+                          <img src={report.proofPhotoUrl} alt="Cleanup Proof" className="citizen-proof-img" />
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* ORIGINAL REPORTED PHOTO (IF AVAILABLE) */}
+                {report.photoUrl && (
+                  <div className="citizen-original-photo-card" onClick={e => e.stopPropagation()}>
+                    <div className="citizen-media-tag report-tag">
+                      <span>Reported Waste Photo</span>
+                    </div>
+                    <a href={report.photoUrl} target="_blank" rel="noopener noreferrer" title="Click to view full image">
+                      <img src={report.photoUrl} alt="Reported Waste" className="citizen-report-img" />
+                    </a>
+                  </div>
+                )}
+
+                {/* STATUS TIMELINE */}
                 <div className="status-timeline">
                   {report.timeline.map((step, index) => (
                     <div key={index} className={`timeline-item ${step.completed ? 'active' : ''} ${step.failed ? 'failed' : ''}`}>

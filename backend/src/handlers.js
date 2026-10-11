@@ -249,10 +249,26 @@ module.exports.updateReportStatus = async (event) => {
       expressionAttributeValues[':s'] = 'accepted';
       expressionAttributeValues[':u'] = userId;
     } else if (action === 'resolve') {
-      currentTimeline[3].completed = true;
-      currentTimeline[3].timestamp = new Date().toISOString();
-      updateExpression = 'set #status = :s, timeline = :t';
+      const now = new Date().toISOString();
+      if (currentTimeline[3]) {
+        currentTimeline[3].completed = true;
+        currentTimeline[3].timestamp = now;
+      }
+      
+      let expr = 'set #status = :s, timeline = :t, resolvedAt = :ra, resolvedBy = :rb';
       expressionAttributeValues[':s'] = 'resolved';
+      expressionAttributeValues[':ra'] = data.resolvedAt || now;
+      expressionAttributeValues[':rb'] = data.workerName || userId;
+
+      if (data.proofPhotoUrl) {
+        expr += ', proofPhotoUrl = :ppu';
+        expressionAttributeValues[':ppu'] = data.proofPhotoUrl;
+      }
+      if (data.proofDescription && data.proofDescription.trim()) {
+        expr += ', proofDescription = :pd';
+        expressionAttributeValues[':pd'] = data.proofDescription.trim();
+      }
+      updateExpression = expr;
     } else {
       return createResponse(400, { error: 'Invalid action' });
     }

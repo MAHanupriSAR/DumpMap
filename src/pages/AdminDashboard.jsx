@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from 'react-leaflet';
-import { AlertTriangle, CheckCircle, BarChart3, Map as MapIcon, AlertOctagon, Clock, LogOut, MapPin, ExternalLink } from 'lucide-react';
+import { AlertTriangle, CheckCircle, BarChart3, Map as MapIcon, AlertOctagon, Clock, LogOut, MapPin, ExternalLink, Camera, UploadCloud, Loader2, Image as ImageIcon } from 'lucide-react';
 import { useAuth } from 'react-oidc-context';
 import { signOutCognito } from '../authConfig';
 import './AdminDashboard.css';
@@ -38,6 +38,14 @@ const AdminDashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedHotspot, setSelectedHotspot] = useState(null);
   const [activeTab, setActiveTab] = useState('available');
+
+  // Resolution proof modal state
+  const [resolvingReport, setResolvingReport] = useState(null);
+  const [proofPhoto, setProofPhoto] = useState(null);
+  const [proofPhotoPreview, setProofPhotoPreview] = useState(null);
+  const [proofDescription, setProofDescription] = useState('');
+  const [isSubmittingResolution, setIsSubmittingResolution] = useState(false);
+  const [resolutionError, setResolutionError] = useState('');
   
   // Staff identity comes from Cognito user profile or fallback
   const user = auth.user?.profile;
@@ -78,6 +86,98 @@ const AdminDashboard = () => {
       }
     } catch (err) {
       console.error(`Failed to ${action} report`, err);
+    }
+  };
+
+  const handleOpenResolveModal = (report) => {
+    setResolvingReport(report);
+    setProofPhoto(null);
+    setProofPhotoPreview(null);
+    setProofDescription('');
+    setResolutionError('');
+  };
+
+  const handleCloseResolveModal = () => {
+    if (isSubmittingResolution) return;
+    setResolvingReport(null);
+    setProofPhoto(null);
+    setProofPhotoPreview(null);
+    setProofDescription('');
+    setResolutionError('');
+  };
+
+  const handlePhotoSelect = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      setResolutionError('Please select a valid image file (JPEG, PNG, WEBP).');
+      return;
+    }
+    setResolutionError('');
+    setProofPhoto(file);
+    const reader = new FileReader();
+    reader.onload = () => {
+      setProofPhotoPreview(reader.result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleSubmitResolution = async (e) => {
+    e.preventDefault();
+    if (!proofPhoto) {
+      setResolutionError('A proof photo is required to mark this task as resolved.');
+      return;
+    }
+
+    setIsSubmittingResolution(true);
+    setResolutionError('');
+    try {
+      const fileExt = proofPhoto.name ? proofPhoto.name.split('.').pop() : 'jpg';
+      const fileType = proofPhoto.type || 'image/jpeg';
+      const filename = `proof-${Date.now()}.${fileExt}`;
+
+      const urlRes = await fetch(
+        `https://9y9e6wstgh.execute-api.us-east-1.amazonaws.com/upload-url?filename=${encodeURIComponent(filename)}&filetype=${encodeURIComponent(fileType)}`
+      );
+      const urlData = await urlRes.json();
+
+      if (!urlData.uploadUrl) {
+        throw new Error('Failed to get secure upload URL');
+      }
+
+      await fetch(urlData.uploadUrl, {
+        method: 'PUT',
+        body: proofPhoto,
+        headers: { 'Content-Type': fileType }
+      });
+
+      const proofPhotoUrl = urlData.fileUrl;
+
+      const res = await fetch(`https://9y9e6wstgh.execute-api.us-east-1.amazonaws.com/reports/${resolvingReport.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'resolve',
+          userId: userId,
+          workerName: workerName,
+          proofPhotoUrl: proofPhotoUrl,
+          proofDescription: proofDescription.trim(),
+          resolvedAt: new Date().toISOString()
+        })
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to update report status on server');
+      }
+
+      handleCloseResolveModal();
+      await fetchReports();
+      setActiveTab('resolved');
+    } catch (err) {
+      console.error('Error submitting resolution proof:', err);
+      setResolutionError(err.message || 'Failed to submit resolution. Please try again.');
+    } finally {
+      setIsSubmittingResolution(false);
     }
   };
 
@@ -235,7 +335,7 @@ const AdminDashboard = () => {
                     <div className="priority-actions-group">
                       <button className="view-details-btn" onClick={() => setSelectedHotspot({ location: report.location, reports: [report] })}>Details</button>
                       {activeTab === 'available' && <button className="dispatch-btn" onClick={() => handleAction(report.id, 'accept')}>Accept</button>}
-                      {activeTab === 'accepted' && <button className="dispatch-btn" style={{ backgroundColor: '#10B981' }} onClick={() => handleAction(report.id, 'resolve')}>Resolve</button>}
+                      {activeTab === 'accepted' && <button className="dispatch-btn" style={{ backgroundColor: '#10B981' }} onClick={() => handleOpenResolveModal(report)}>Resolve</button>}
                       {activeTab === 'resolved' && <button className="dispatch-btn" style={{ backgroundColor: '#94A3B8', cursor: 'default' }} disabled>Resolved</button>}
                     </div>
                   </div>
@@ -344,13 +444,174 @@ const AdminDashboard = () => {
                     
                     {report.photoUrl && (
                       <div className="report-image-container">
+                        <div className="report-image-caption">Citizen Uploaded Photo</div>
                         <img src={report.photoUrl} alt="Waste" className="report-image" />
+                      </div>
+                    )}
+
+                    {/* RESOLUTION PROOF (IF RESOLVED) */}
+                    {report.status === 'resolved' && (report.proofPhotoUrl || report.proofDescription) && (
+                      <div className="resolution-proof-display-card">
+                        <div className="resolution-proof-header">
+                          <div className="proof-header-badge">
+                            <CheckCircle size={15} color="#10B981" />
+                            <span>Cleanup Verified & Resolved</span>
+                          </div>
+                          {report.resolvedAt && (
+                            <span className="proof-time-ago">{formatTimeAgo(report.resolvedAt)}</span>
+                          )}
+                        </div>
+
+                        {report.resolvedBy && (
+                          <div className="proof-worker-attribution">
+                            Worker: <strong>{report.resolvedBy}</strong>
+                          </div>
+                        )}
+
+                        {report.proofDescription && (
+                          <div className="proof-desc-box">
+                            <span className="proof-desc-label">Worker Notes:</span>
+                            <p className="proof-desc-text">"{report.proofDescription}"</p>
+                          </div>
+                        )}
+
+                        {report.proofPhotoUrl && (
+                          <div className="report-image-container proof-image-container">
+                            <div className="report-image-caption proof-caption">Resolution Proof Photo</div>
+                            <img src={report.proofPhotoUrl} alt="Cleanup Proof" className="report-image" />
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
                 ))}
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* RESOLUTION PROOF MODAL FOR WORKERS */}
+      {resolvingReport && (
+        <div className="admin-modal-overlay" onClick={handleCloseResolveModal}>
+          <div className="admin-modal-content resolve-proof-modal" onClick={e => e.stopPropagation()}>
+            <div className="admin-modal-header">
+              <div>
+                <h2>Complete & Resolve Task</h2>
+                <div className="resolve-location-sub">
+                  <MapPin size={14} color="#64748B" />
+                  <span>{resolvingReport.location}</span>
+                </div>
+              </div>
+              <button className="close-btn" onClick={handleCloseResolveModal} disabled={isSubmittingResolution}>✕</button>
+            </div>
+
+            <form onSubmit={handleSubmitResolution} className="admin-modal-body resolve-modal-body">
+              <div className="resolve-guide-banner">
+                <CheckCircle size={18} color="#10B981" />
+                <span>Upload or take a photo proving the waste was cleared. Citizens will see this proof on their report.</span>
+              </div>
+
+              {resolutionError && (
+                <div className="resolve-error-banner">
+                  <AlertTriangle size={16} />
+                  <span>{resolutionError}</span>
+                </div>
+              )}
+
+              {/* PHOTO UPLOAD */}
+              <div className="resolve-form-group">
+                <label className="resolve-form-label">
+                  <Camera size={16} color="#0F172A" />
+                  <span>Proof Photo <strong className="required-star">*</strong></span>
+                </label>
+
+                {!proofPhotoPreview ? (
+                  <label className="proof-dropzone">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      onChange={handlePhotoSelect}
+                      style={{ display: 'none' }}
+                      disabled={isSubmittingResolution}
+                    />
+                    <div className="dropzone-body">
+                      <div className="dropzone-icon-circle">
+                        <UploadCloud size={28} color="#10B981" />
+                      </div>
+                      <span className="dropzone-primary-text">Click or tap to take / upload photo</span>
+                      <span className="dropzone-subtext">JPG, PNG, WEBP (Required as proof of work)</span>
+                    </div>
+                  </label>
+                ) : (
+                  <div className="proof-preview-card">
+                    <img src={proofPhotoPreview} alt="Proof preview" className="proof-preview-image" />
+                    <div className="proof-preview-footer">
+                      <span className="proof-file-name">{proofPhoto?.name || 'Photo captured'}</span>
+                      <label className="proof-retake-btn">
+                        Retake Photo
+                        <input
+                          type="file"
+                          accept="image/*"
+                          capture="environment"
+                          onChange={handlePhotoSelect}
+                          style={{ display: 'none' }}
+                          disabled={isSubmittingResolution}
+                        />
+                      </label>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* OPTIONAL DESCRIPTION */}
+              <div className="resolve-form-group" style={{ marginTop: '18px' }}>
+                <label className="resolve-form-label">
+                  <span>Work Description / Remarks</span>
+                  <span className="optional-tag">(optional)</span>
+                </label>
+                <textarea
+                  className="resolve-textarea"
+                  rows={3}
+                  placeholder="e.g. Cleared 3 bags of plastic waste, swept the sidewalk, and sanitized the curb."
+                  value={proofDescription}
+                  onChange={e => setProofDescription(e.target.value)}
+                  maxLength={300}
+                  disabled={isSubmittingResolution}
+                />
+                <div className="resolve-char-counter">{proofDescription.length}/300</div>
+              </div>
+
+              {/* ACTIONS */}
+              <div className="resolve-modal-actions">
+                <button
+                  type="button"
+                  className="cancel-btn"
+                  onClick={handleCloseResolveModal}
+                  disabled={isSubmittingResolution}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="confirm-resolve-btn"
+                  disabled={isSubmittingResolution || !proofPhoto}
+                >
+                  {isSubmittingResolution ? (
+                    <>
+                      <Loader2 size={16} className="spin-icon" />
+                      <span>Uploading & Resolving...</span>
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle size={16} />
+                      <span>Submit & Mark Resolved</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

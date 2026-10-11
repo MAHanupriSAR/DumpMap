@@ -220,3 +220,132 @@
   line-height: 1;
   font-weight: bold;
 }
+
+/* Citizen Resolution Proof Card & Photos */
+.citizen-proof-card {
+  margin: 16px 0;
+  padding: 16px;
+  background: linear-gradient(180deg, #F0FDF4 0%, #FFFFFF 100%);
+  border: 1.5px solid #86EFAC;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px -2px rgba(16, 185, 129, 0.12);
+}
+
+.citizen-proof-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.citizen-proof-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #065F46;
+}
+
+.citizen-proof-date {
+  font-size: 0.8rem;
+  color: #059669;
+  font-weight: 500;
+}
+
+.citizen-proof-worker {
+  font-size: 0.82rem;
+  color: #475569;
+  margin-top: 4px;
+}
+
+.citizen-proof-note-box {
+  margin-top: 12px;
+  padding: 10px 14px;
+  background-color: #FFFFFF;
+  border: 1px solid #DCFCE7;
+  border-radius: 8px;
+}
+
+.citizen-proof-note-label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #059669;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.citizen-proof-note-text {
+  margin: 0 !important;
+  color: #1E293B !important;
+  font-size: 0.9rem;
+  font-style: normal !important;
+  line-height: 1.45;
+}
+
+.citizen-proof-media {
+  margin-top: 12px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #A7F3D0;
+  background-color: #F8FAFC;
+}
+
+.citizen-media-tag {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.citizen-media-tag.proof-tag {
+  background-color: #DCFCE7;
+  color: #065F46;
+  border-bottom: 1px solid #A7F3D0;
+}
+
+.citizen-media-tag.report-tag {
+  background-color: #F1F5F9;
+  color: #475569;
+  border-bottom: 1px solid #E2E8F0;
+}
+
+.citizen-proof-img {
+  width: 100%;
+  max-height: 280px;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.2s ease;
+  cursor: pointer;
+}
+
+.citizen-proof-img:hover {
+  transform: scale(1.01);
+}
+
+.citizen-original-photo-card {
+  margin: 16px 0;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #E2E8F0;
+  background-color: #F8FAFC;
+}
+
+.citizen-report-img {
+  width: 100%;
+  max-height: 220px;
+  object-fit: cover;
+  display: block;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.citizen-report-img:hover {
+  transform: scale(1.01);
+}
+
