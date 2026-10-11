@@ -106,6 +106,7 @@ graph TB
 ## Key Features
 
 ### 1. Citizen Experience
+- **Modernized Civic Portal**: High-aesthetic, responsive landing experience prioritizing public citizen reporting with immediate status tracking.
 - **Interactive 5-Step Waste Reporting**: Mobile-optimized flow to document location, waste category (plastic, wet, hazardous, debris), amount, urgency flags, and photographic evidence.
 - **Precision Geolocation**: Built on Leaflet and OpenStreetMap with interactive reverse-geocoded map pinning and coordinate tracking.
 - **Live Status Timeline**: Transparent tracking displaying incident milestones: `Reported` -> `Verified` -> `Accepted by Crew` -> `Resolved`.
@@ -113,8 +114,11 @@ graph TB
 
 ### 2. Municipal Staff & Field Crew Experience
 - **Role-Based Provisioned Access**: Field staff log in through a separate, hardened Cognito pool with pre-provisioned municipal accounts (`worker1@dumpmap.gov`, `worker2@dumpmap.gov`, etc.) without public signup exposure.
+- **Crew Profile & Location Resolution**: When crew members sign in with email and password, their full profile (Name, Worker ID, Zone, and Assigned Base Address) is fetched from the municipal registry. Coordinates are stored in the backend as latitude and longitude, and resolved into human-readable Delhi addresses on the frontend.
+- **Proximity-Based Task Dispatching (Distance Sorting)**: Reports in the Staff Task Manager are automatically sorted by proximity to the crew's assigned base address ($X$) using the Haversine formula (**nearest reports first, farthest reports last**). Each report card displays an exact proximity badge (e.g., `📍 331 m away`, `📍 1.4 km away`).
+- **Live Interactive Heatmap**: Displays 40+ active, AI-verified hotspots across Delhi categorized into High (🔴 Red), Medium (🟡 Yellow), and Low (🔵 Blue) criticality, complete with the crew's base location marker and popup distance metrics.
 - **Task Assignment Matrix**: Real-time tabs categorizing tasks into:
-  - **Available**: Unclaimed, verified civic reports.
+  - **Available**: Unclaimed, verified civic reports sorted by distance from base.
   - **My Accepted**: Active dispatch assignments claimed by the logged-in staff member.
   - **My Resolved**: Completed cleanups with stored resolution history.
 - **Isolated Incident Location Map**: When inspecting incident details, an embedded map isolates only that specific report with immediate Google Maps turn-by-turn navigation links.
@@ -161,11 +165,16 @@ sequenceDiagram
         Lambda->>DDB: Update status = "rejected", timeline[1].failed = true
     end
 
-    Note over Worker, DDB: Staff Task Assignment & Cleanup
+    Note over Worker, DDB: Staff Task Assignment & Proximity Dispatch
     Worker->>Client: Open Staff Dashboard
+    Client->>API: GET /worker-profile?email=worker@dumpmap.gov
+    API->>Lambda: invoke getWorkerProfile
+    Lambda-->>Client: Return profile + Base Coordinates (lat, lng)
     Client->>API: GET /reports
     API->>Lambda: Fetch active reports
-    Lambda-->>Worker: Display available reports on Hotspot Map
+    Lambda-->>Client: Return active incident reports
+    Note over Client: Calculate Haversine Distances & Sort Nearest-First
+    Client-->>Worker: Display available reports sorted by distance on Live Heatmap
     Worker->>Client: Click "Accept"
     Client->>API: PUT /reports/{id} (action: "accept", workerId)
     API->>DDB: Update status = "accepted", assignedTo = workerId
@@ -244,9 +253,13 @@ sequenceDiagram
   "name": "Ramesh Kumar",
   "workerId": "STAFF-001",
   "zone": "North Delhi",
+  "latitude": 28.7041,
+  "longitude": 77.1025,
   "role": "staff"
 }
 ```
+
+> **Note on Geospatial Representation:** On the backend and database, crew base locations are stored as numeric `latitude` and `longitude` coordinates for rapid Euclidean/Haversine distance computations. On the frontend, these coordinates are reverse-geocoded and presented as localized Delhi street addresses in words (e.g., *"Sector 14, Rohini, North Delhi, Delhi 110085"*).
 
 ---
 
@@ -260,6 +273,7 @@ sequenceDiagram
 | `POST` | `/reports` | Creates a new report and queues image verification | `{ location, lat, lng, type, amount, criticality, description, photoUrl, userId }` |
 | `GET` | `/reports` | Retrieves reports (all active, or filtered by citizen) | `?userId={sub}` |
 | `PUT` | `/reports/{id}` | Updates task assignment or marks as resolved with proof | `{ action: "resolve", userId, workerName, proofPhotoUrl, proofDescription }` |
+| `GET` | `/worker-profile` | Retrieves crew profile with coordinates by email | `?email=worker1@dumpmap.gov` |
 | `POST` | `/verify-worker` | Direct credential verification fallback | `{ email, password }` |
 
 ---
