@@ -52,13 +52,15 @@ const Landing = () => {
           </nav>
 
           <div className="nav-actions">
-            <button className="nav-btn citizen-btn" onClick={handleCitizenLogin}>
-              <User size={16} />
-              <span>Citizen Sign In</span>
+            <button className="nav-btn citizen-btn" onClick={handleCitizenLogin} title="Citizen Sign In" aria-label="Citizen Sign In">
+              <User size={15} />
+              <span className="btn-text-full">Citizen Sign In</span>
+              <span className="btn-text-short">Citizen</span>
             </button>
-            <button className="nav-btn staff-btn" onClick={handleStaffLogin}>
-              <ShieldCheck size={16} />
-              <span>Staff Portal</span>
+            <button className="nav-btn staff-btn" onClick={handleStaffLogin} title="Staff Portal" aria-label="Staff Portal">
+              <ShieldCheck size={15} />
+              <span className="btn-text-full">Staff Portal</span>
+              <span className="btn-text-short">Staff</span>
             </button>
           </div>
         </div>
