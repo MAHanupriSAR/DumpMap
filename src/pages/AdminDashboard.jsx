@@ -1,9 +1,22 @@
 import { useState, useEffect, useCallback } from 'react';
-import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
-import { AlertTriangle, CheckCircle, BarChart3, Map as MapIcon, AlertOctagon, Clock, LogOut } from 'lucide-react';
+import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from 'react-leaflet';
+import { AlertTriangle, CheckCircle, BarChart3, Map as MapIcon, AlertOctagon, Clock, LogOut, MapPin, ExternalLink } from 'lucide-react';
 import { useAuth } from 'react-oidc-context';
 import { signOutCognito } from '../authConfig';
 import './AdminDashboard.css';
+
+const RecenterMap = ({ lat, lng, zoom = 16 }) => {
+  const map = useMap();
+  useEffect(() => {
+    if (!isNaN(lat) && !isNaN(lng)) {
+      map.setView([lat, lng], zoom);
+      setTimeout(() => {
+        map.invalidateSize();
+      }, 150);
+    }
+  }, [lat, lng, zoom, map]);
+  return null;
+};
 
 const getHotspotColor = (criticality) => {
   if (criticality === 'high') return '#EF4444';  // Red
@@ -151,8 +164,12 @@ const AdminDashboard = () => {
               </div>
               <div className="admin-map-container">
                 <MapContainer 
-                  center={[40.7128, -74.0060]} 
-                  zoom={12} 
+                  center={
+                    availableReports.length > 0 && !isNaN(parseFloat(availableReports[0].lat))
+                      ? [parseFloat(availableReports[0].lat), parseFloat(availableReports[0].lng)]
+                      : [28.6139, 77.2090]
+                  } 
+                  zoom={13} 
                   style={{ height: '100%', width: '100%', borderRadius: '12px' }}
                   zoomControl={true}
                 >
@@ -160,6 +177,9 @@ const AdminDashboard = () => {
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                   />
+                  {availableReports.length > 0 && !isNaN(parseFloat(availableReports[0].lat)) && (
+                    <RecenterMap lat={parseFloat(availableReports[0].lat)} lng={parseFloat(availableReports[0].lng)} zoom={13} />
+                  )}
                   {availableReports.map(report => (
                     <CircleMarker
                       key={report.id}
@@ -170,6 +190,9 @@ const AdminDashboard = () => {
                         fillColor: getHotspotColor(report.criticality),
                         fillOpacity: 0.7,
                         weight: 1
+                      }}
+                      eventHandlers={{
+                        click: () => setSelectedHotspot({ location: report.location, reports: [report] })
                       }}
                     >
                       <Popup>
@@ -268,6 +291,56 @@ const AdminDashboard = () => {
                         <p className="report-desc">"{report.description}"</p>
                       )}
                     </div>
+
+                    {/* ONLY THIS PARTICULAR REPORT SHOWN ON MAP */}
+                    {report.lat && report.lng && !isNaN(parseFloat(report.lat)) && !isNaN(parseFloat(report.lng)) && (
+                      <div className="report-detail-map-section">
+                        <div className="report-detail-map-header">
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <MapPin size={16} color="#16A34A" />
+                            <span>Report Location</span>
+                          </div>
+                          <a 
+                            href={`https://www.google.com/maps?q=${report.lat},${report.lng}`} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="maps-ext-link"
+                          >
+                            Open in Google Maps <ExternalLink size={12} />
+                          </a>
+                        </div>
+                        <div className="report-detail-map-wrapper">
+                          <MapContainer
+                            center={[parseFloat(report.lat), parseFloat(report.lng)]}
+                            zoom={16}
+                            style={{ height: '220px', width: '100%', borderRadius: '0 0 10px 10px' }}
+                            zoomControl={true}
+                            scrollWheelZoom={false}
+                          >
+                            <TileLayer
+                              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                            />
+                            <RecenterMap lat={parseFloat(report.lat)} lng={parseFloat(report.lng)} zoom={16} />
+                            <CircleMarker
+                              center={[parseFloat(report.lat), parseFloat(report.lng)]}
+                              radius={12}
+                              pathOptions={{
+                                color: getHotspotColor(report.criticality),
+                                fillColor: getHotspotColor(report.criticality),
+                                fillOpacity: 0.85,
+                                weight: 2
+                              }}
+                            >
+                              <Popup>
+                                <strong>{report.type} waste</strong><br />
+                                {report.location}
+                              </Popup>
+                            </CircleMarker>
+                          </MapContainer>
+                        </div>
+                      </div>
+                    )}
                     
                     {report.photoUrl && (
                       <div className="report-image-container">

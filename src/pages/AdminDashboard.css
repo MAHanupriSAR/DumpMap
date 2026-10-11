@@ -542,3 +542,58 @@
   color: white;
   border-color: #1E293B;
 }
+
+/* Report Detail Modal Map */
+.report-detail-map-section {
+  margin: 16px 0;
+  border-radius: 12px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.report-detail-map-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background-color: #F8FAFC;
+  border-bottom: 1px solid #E2E8F0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #334155;
+  gap: 8px;
+}
+
+.maps-ext-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: #2563EB;
+  text-decoration: none;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background-color: #EFF6FF;
+  transition: all 0.2s;
+}
+
+.maps-ext-link:hover {
+  background-color: #DBEAFE;
+  color: #1D4ED8;
+}
+
+.report-detail-map-wrapper {
+  height: 220px;
+  width: 100%;
+  position: relative;
+}
+
+.report-detail-map-wrapper .leaflet-container {
+  height: 100% !important;
+  width: 100% !important;
+  z-index: 1;
+}
+
