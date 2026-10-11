@@ -50,7 +50,7 @@ const CrewProfileModal = ({ profile, onClose, onSignOut }) => {
           <div className="crew-header-title">
             <span className="crew-gov-pill">
               <ShieldCheck size={14} color="#10B981" />
-              Municipal Corporation of Delhi · Sanitation Corps
+              Municipality · Sanitation Corps
             </span>
             <h2>Crew Profile</h2>
           </div>
