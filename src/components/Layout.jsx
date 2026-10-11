@@ -1,5 +1,5 @@
 import { Outlet, NavLink, useLocation } from 'react-router-dom';
-import { Home, Map as MapIcon, ClipboardList, User } from 'lucide-react';
+import { Home, Map as MapIcon, ClipboardList, User, Briefcase } from 'lucide-react';
 import './Layout.css';
 
 const Layout = () => {
@@ -14,6 +14,7 @@ const Layout = () => {
   };
 
   const activeIndex = getActiveIndex();
+  const isStaff = localStorage.getItem('userRole') === 'staff';
 
   return (
     <div className="mobile-app-container">
@@ -39,6 +40,12 @@ const Layout = () => {
           <User size={24} />
           <span>Profile</span>
         </NavLink>
+        {isStaff && (
+          <NavLink to="/admin" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+            <Briefcase size={24} />
+            <span>Staff</span>
+          </NavLink>
+        )}
       </nav>
     </div>
   );

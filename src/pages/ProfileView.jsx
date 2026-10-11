@@ -12,12 +12,13 @@ const ProfileView = () => {
   const initial = name.charAt(0).toUpperCase();
 
   const handleSignOut = () => {
-    // Attempt Cognito sign out, fallback to clearing local state
+    localStorage.removeItem('auth_pool');
+    localStorage.removeItem('userRole');
     if (auth.signoutRedirect) {
       auth.signoutRedirect();
     } else {
       auth.removeUser();
-      window.location.reload();
+      window.location.href = '/';
     }
   };
 

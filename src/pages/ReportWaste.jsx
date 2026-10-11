@@ -644,7 +644,13 @@ const ReportWaste = () => {
             
             <div className="location-summary">
               <MapPin size={20} color="#64748B" style={{ flexShrink: 0 }} />
-              <span style={{ textAlign: 'center', wordBreak: 'break-word', padding: '0 8px' }}>
+              <span style={{ textAlign: 'center', wordBreak: 'break-word', padding: '0 8px' }}>can i do git add . ?
+              any secrets?
+              what commit message
+              7:44 AM
+              .gitignore
+              Working.
+              
                 {formData.location?.address || 'Location saved'}
               </span>
             </div>
@@ -659,6 +665,10 @@ const ReportWaste = () => {
               <div className="timeline-item">
                 <div className="timeline-dot"></div>
                 <span>Verified</span>
+              </div>
+              <div className="timeline-item">
+                <div className="timeline-dot"></div>
+                <span>Accepted</span>
               </div>
               <div className="timeline-item">
                 <div className="timeline-dot"></div>

@@ -519,3 +519,26 @@
   background-color: #F1F5F9;
   color: #0F172A;
 }
+
+/* Staff Tabs */
+.tab-btn {
+  background: transparent;
+  border: 1px solid #E2E8F0;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #64748B;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tab-btn:hover {
+  background-color: #F1F5F9;
+}
+
+.tab-btn.active {
+  background: #1E293B;
+  color: white;
+  border-color: #1E293B;
+}

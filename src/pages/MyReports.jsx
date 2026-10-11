@@ -87,6 +87,11 @@ const MyReports = () => {
                     <CheckCircle size={16} />
                     <span>Resolved</span>
                   </div>
+                ) : report.status === 'accepted' ? (
+                  <div className="status accepted" style={{ color: '#3B82F6' }}>
+                    <Clock size={16} />
+                    <span>Accepted by Crew</span>
+                  </div>
                 ) : (
                   <div className="status pending">
                     <Clock size={16} />

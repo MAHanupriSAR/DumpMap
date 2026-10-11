@@ -21,7 +21,11 @@ provider:
         - OPTIONS
   environment:
     REPORTS_TABLE: ${self:service}-${sls:stage}-reports
+    WORKERS_TABLE: ${self:service}-${sls:stage}-workers
     UPLOAD_BUCKET: ${self:service}-${sls:stage}-uploads-${aws:accountId}
+    COGNITO_USER_POOL_ID: ap-south-1_igoGrvGIP
+    COGNITO_CLIENT_ID: 55dht6jg5ta3c3heobhneh5na8
+    COGNITO_REGION: ap-south-1
   iam:
     role:
       statements:
@@ -35,6 +39,13 @@ provider:
           Resource: "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:provider.environment.REPORTS_TABLE}"
         - Effect: Allow
           Action:
+            - dynamodb:PutItem
+            - dynamodb:Scan
+            - dynamodb:GetItem
+            - dynamodb:Query
+          Resource: "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:provider.environment.WORKERS_TABLE}"
+        - Effect: Allow
+          Action:
             - rekognition:DetectLabels
           Resource: "*"
         - Effect: Allow
@@ -42,6 +53,12 @@ provider:
             - s3:PutObject
             - s3:GetObject
           Resource: "arn:aws:s3:::${self:provider.environment.UPLOAD_BUCKET}/*"
+        - Effect: Allow
+          Action:
+            - cognito-idp:AdminInitiateAuth
+            - cognito-idp:AdminGetUser
+            - cognito-idp:AdminListGroupsForUser
+          Resource: "arn:aws:cognito-idp:ap-south-1:${aws:accountId}:userpool/ap-south-1_igoGrvGIP"
 
 functions:
   getUploadUrl:
@@ -65,6 +82,20 @@ functions:
       - httpApi:
           path: /reports
           method: get
+
+  updateReportStatus:
+    handler: src/handlers.updateReportStatus
+    events:
+      - httpApi:
+          path: /reports/{id}
+          method: put
+
+  verifyWorker:
+    handler: src/handlers.verifyWorker
+    events:
+      - httpApi:
+          path: /verify-worker
+          method: post
 
   verifyImage:
     handler: src/handlers.verifyImage
@@ -129,3 +160,14 @@ resources:
                   - !Ref UploadBucket
                   - "/*"
               Principal: "*"
+    WorkersTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.WORKERS_TABLE}
+        AttributeDefinitions:
+          - AttributeName: email
+            AttributeType: S
+        KeySchema:
+          - AttributeName: email
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST

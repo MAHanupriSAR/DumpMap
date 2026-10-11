@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
-import { AlertTriangle, CheckCircle, BarChart3, Map as MapIcon, AlertOctagon, Clock } from 'lucide-react';
+import { AlertTriangle, CheckCircle, BarChart3, Map as MapIcon, AlertOctagon, Clock, LogOut } from 'lucide-react';
+import { useAuth } from 'react-oidc-context';
 import './AdminDashboard.css';
 
 const getHotspotColor = (criticality) => {
@@ -18,59 +19,89 @@ const formatTimeAgo = (isoString) => {
 };
 
 const AdminDashboard = () => {
+  const auth = useAuth();
   const [reports, setReports] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedHotspot, setSelectedHotspot] = useState(null);
+  const [activeTab, setActiveTab] = useState('available');
+  
+  // Staff identity comes from Cognito user profile or fallback
+  const user = auth.user?.profile;
+  const workerEmail = user?.email || localStorage.getItem('workerEmail') || 'staff@dumpmap.gov';
+  const workerName = user?.name || localStorage.getItem('workerName') || workerEmail.split('@')[0];
+  const userId = workerEmail;
+  const workerZone = localStorage.getItem('workerZone') || 'Municipal Zone';
 
-  useEffect(() => {
-    const fetchReports = async () => {
-      try {
-        const response = await fetch('https://9y9e6wstgh.execute-api.us-east-1.amazonaws.com/reports');
-        const data = await response.json();
-        setReports(data.reports || []);
-      } catch (err) {
-        console.error("Failed to fetch reports", err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    fetchReports();
+  const handleLogout = () => {
+    localStorage.removeItem('auth_pool');
+    localStorage.removeItem('userRole');
+    localStorage.removeItem('staffLoggedIn');
+    localStorage.removeItem('workerId');
+    localStorage.removeItem('workerName');
+    localStorage.removeItem('workerZone');
+    if (auth.signoutRedirect) {
+      auth.signoutRedirect();
+    } else {
+      auth.removeUser();
+      window.location.href = '/';
+    }
+  };
+
+  const fetchReports = useCallback(async () => {
+    try {
+      const response = await fetch('https://9y9e6wstgh.execute-api.us-east-1.amazonaws.com/reports');
+      const data = await response.json();
+      setReports(data.reports || []);
+    } catch (err) {
+      console.error("Failed to fetch reports", err);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
-  // Compute analytics
-  const activeReports = reports.filter(r => r.status !== 'resolved' && r.status !== 'rejected');
-  const criticalReports = activeReports.filter(r => r.criticality === 'high');
-  
-  // Group by location to simulate "Hotspots" (rudimentary grouping by string)
-  const locationGroups = {};
-  activeReports.forEach(r => {
-    const loc = r.location || 'Unknown Location';
-    if (!locationGroups[loc]) locationGroups[loc] = { count: 0, criticality: r.criticality, oldest: r.createdAt, reports: [] };
-    locationGroups[loc].count += 1;
-    locationGroups[loc].reports.push(r);
-    if (r.criticality === 'high') locationGroups[loc].criticality = 'high';
-  });
+  useEffect(() => {
+    fetchReports();
+  }, [fetchReports]);
 
-  const hotspotsList = Object.keys(locationGroups).map(loc => ({
-    location: loc,
-    ...locationGroups[loc]
-  })).sort((a, b) => {
-    // Sort by high criticality first, then by count
-    if (a.criticality === 'high' && b.criticality !== 'high') return -1;
-    if (a.criticality !== 'high' && b.criticality === 'high') return 1;
-    return b.count - a.count;
-  });
+  const handleAction = async (reportId, action) => {
+    try {
+      const res = await fetch(`https://9y9e6wstgh.execute-api.us-east-1.amazonaws.com/reports/${reportId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action, userId })
+      });
+      if (res.ok) {
+        fetchReports();
+      }
+    } catch (err) {
+      console.error(`Failed to ${action} report`, err);
+    }
+  };
+
+  // Compute analytics and lists
+  const validReports = reports.filter(r => r.status !== 'rejected');
+  
+  const availableReports = validReports.filter(r => r.status === 'active');
+  const acceptedReports = validReports.filter(r => r.status === 'accepted' && r.assignedTo === userId);
+  const resolvedReports = validReports.filter(r => r.status === 'resolved' && r.assignedTo === userId);
+  
+  const currentList = activeTab === 'available' ? availableReports : activeTab === 'accepted' ? acceptedReports : resolvedReports;
+  const criticalReports = availableReports.filter(r => r.criticality === 'high');
 
   return (
     <div className="admin-container">
       <header className="admin-header">
         <div className="admin-header-content">
           <div>
-            <h1>Municipal Intelligence</h1>
-            <p>Live Waste Activity & Priority Matrix</p>
+            <h1>Staff Dashboard</h1>
+            <p>Task Assignment & Resolution Matrix {workerZone ? `· ${workerZone}` : ''}</p>
           </div>
-          <button className="export-btn">Export Report</button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <span style={{ fontSize: '0.9rem', color: '#64748B', fontWeight: 500 }}>👋 {workerName}</span>
+            <button className="export-btn" onClick={handleLogout} style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#EF4444', borderColor: '#FECACA' }}>
+              <LogOut size={15} /> Logout
+            </button>
+          </div>
         </div>
       </header>
 
@@ -95,8 +126,8 @@ const AdminDashboard = () => {
                 <MapIcon size={24} />
               </div>
               <div className="stat-data">
-                <span className="stat-value">{hotspotsList.length}</span>
-                <span className="stat-label">Active Hotspots</span>
+                <span className="stat-value">{availableReports.length}</span>
+                <span className="stat-label">Available Hotspots</span>
               </div>
             </div>
 
@@ -115,8 +146,8 @@ const AdminDashboard = () => {
                 <Clock size={24} />
               </div>
               <div className="stat-data">
-                <span className="stat-value">{activeReports.length}</span>
-                <span className="stat-label">Unresolved</span>
+                <span className="stat-value">{acceptedReports.length}</span>
+                <span className="stat-label">My Active Tasks</span>
               </div>
             </div>
           </div>
@@ -139,7 +170,7 @@ const AdminDashboard = () => {
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                   />
-                  {activeReports.map(report => (
+                  {availableReports.map(report => (
                     <CircleMarker
                       key={report.id}
                       center={[parseFloat(report.lat), parseFloat(report.lng)]}
@@ -161,40 +192,46 @@ const AdminDashboard = () => {
               </div>
             </div>
 
-            {/* PRIORITY ACTIONS */}
+            {/* STAFF TASK MANAGER */}
             <div className="priority-card">
-              <div className="card-header">
-                <h2>Priority Actions</h2>
-                <span className="action-count">{hotspotsList.length} needed</span>
+              <div className="card-header" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '16px' }}>
+                <h2>Staff Task Manager</h2>
+                <div className="staff-tabs" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  <button className={`tab-btn ${activeTab === 'available' ? 'active' : ''}`} onClick={() => setActiveTab('available')}>Available ({availableReports.length})</button>
+                  <button className={`tab-btn ${activeTab === 'accepted' ? 'active' : ''}`} onClick={() => setActiveTab('accepted')}>My Accepted ({acceptedReports.length})</button>
+                  <button className={`tab-btn ${activeTab === 'resolved' ? 'active' : ''}`} onClick={() => setActiveTab('resolved')}>My Resolved ({resolvedReports.length})</button>
+                </div>
               </div>
               
               <div className="priority-list">
-                {hotspotsList.slice(0, 6).map((hotspot, idx) => (
-                  <div key={idx} className="priority-item">
+                {currentList.map(report => (
+                  <div key={report.id} className="priority-item">
                     <div className="priority-icon" style={{ 
-                      backgroundColor: hotspot.criticality === 'high' ? '#FEF2F2' : '#FFFBEB',
-                      color: hotspot.criticality === 'high' ? '#EF4444' : '#F59E0B'
+                      backgroundColor: report.criticality === 'high' ? '#FEF2F2' : '#FFFBEB',
+                      color: report.criticality === 'high' ? '#EF4444' : '#F59E0B'
                     }}>
                       <AlertTriangle size={20} />
                     </div>
                     <div className="priority-info">
-                      <h3>{hotspot.location}</h3>
+                      <h3>{report.location}</h3>
                       <div className="priority-meta">
-                        <span className="meta-badge">{hotspot.count} Reports</span>
-                        <span className="meta-time">since {formatTimeAgo(hotspot.oldest)}</span>
+                        <span className="meta-badge">{report.type} waste</span>
+                        <span className="meta-time">since {formatTimeAgo(report.createdAt)}</span>
                       </div>
                     </div>
                     <div className="priority-actions-group">
-                      <button className="view-details-btn" onClick={() => setSelectedHotspot(hotspot)}>View Details</button>
-                      <button className="dispatch-btn">Dispatch</button>
+                      <button className="view-details-btn" onClick={() => setSelectedHotspot({ location: report.location, reports: [report] })}>Details</button>
+                      {activeTab === 'available' && <button className="dispatch-btn" onClick={() => handleAction(report.id, 'accept')}>Accept</button>}
+                      {activeTab === 'accepted' && <button className="dispatch-btn" style={{ backgroundColor: '#10B981' }} onClick={() => handleAction(report.id, 'resolve')}>Resolve</button>}
+                      {activeTab === 'resolved' && <button className="dispatch-btn" style={{ backgroundColor: '#94A3B8', cursor: 'default' }} disabled>Resolved</button>}
                     </div>
                   </div>
                 ))}
                 
-                {hotspotsList.length === 0 && (
+                {currentList.length === 0 && (
                   <div className="no-actions">
                     <CheckCircle size={32} color="#16A34A" />
-                    <p>No active hotspots found.</p>
+                    <p>No reports in this category.</p>
                   </div>
                 )}
               </div>
