@@ -270,108 +270,6 @@
   font-weight: 400;
 }
 
-/* Hero CTA Group */
-.hero-cta-group {
-  display: flex;
-  justify-content: center;
-  gap: 18px;
-  flex-wrap: wrap;
-  margin-bottom: 48px;
-}
-
-.cta-primary-btn {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  background: #0F172A;
-  color: #FFFFFF;
-  border: 1px solid #1E293B;
-  padding: 12px 24px;
-  border-radius: 14px;
-  cursor: pointer;
-  text-align: left;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.2);
-}
-
-.cta-primary-btn:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 15px 30px -5px rgba(15, 23, 42, 0.3);
-  background: #1E293B;
-  border-color: #334155;
-}
-
-.cta-secondary-btn {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  background: #FFFFFF;
-  color: #0F172A;
-  border: 1px solid #CBD5E1;
-  padding: 12px 24px;
-  border-radius: 14px;
-  cursor: pointer;
-  text-align: left;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
-}
-
-.cta-secondary-btn:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.1);
-  border-color: #10B981;
-}
-
-.cta-icon-wrap {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.citizen-icon-bg {
-  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
-}
-
-.staff-icon-bg {
-  background: #ECFDF5;
-  border: 1px solid #A7F3D0;
-}
-
-.cta-btn-text {
-  display: flex;
-  flex-direction: column;
-}
-
-.cta-btn-title {
-  font-size: 1rem;
-  font-weight: 700;
-  line-height: 1.2;
-}
-
-.cta-btn-sub {
-  font-size: 0.78rem;
-  color: #94A3B8;
-  margin-top: 2px;
-}
-
-.cta-secondary-btn .cta-btn-sub {
-  color: #64748B;
-}
-
-.cta-arrow {
-  color: #94A3B8;
-  transition: transform 0.2s ease;
-}
-
-.cta-primary-btn:hover .cta-arrow,
-.cta-secondary-btn:hover .cta-arrow {
-  transform: translateX(4px);
-  color: #10B981;
-}
 
 /* Trust Bar */
 .hero-trust-bar {
@@ -1165,10 +1063,6 @@
     font-size: 1rem;
   }
 
-  .hero-cta-group {
-    flex-direction: column;
-    align-items: stretch;
-  }
 
   .portals-grid {
     grid-template-columns: 1fr;

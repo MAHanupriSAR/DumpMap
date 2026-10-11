@@ -10,7 +10,6 @@ import {
   Layers, 
   Clock, 
   ExternalLink,
-  ChevronRight,
   AlertTriangle,
   Award,
   Zap
@@ -91,31 +90,6 @@ const Landing = () => {
           <p className="hero-description">
             DumpMap empowers citizens to report illegal dumping in 30 seconds while equipping municipal sanitation crews with real-time geospatial intelligence, automated computer vision verification, and photographic proof-of-resolution.
           </p>
-
-          {/* DUAL ACTION BUTTONS */}
-          <div className="hero-cta-group">
-            <button className="cta-primary-btn" onClick={handleCitizenLogin}>
-              <div className="cta-icon-wrap citizen-icon-bg">
-                <User size={20} color="#FFFFFF" />
-              </div>
-              <div className="cta-btn-text">
-                <span className="cta-btn-title">Continue as Citizen</span>
-                <span className="cta-btn-sub">Report waste & track cleanups</span>
-              </div>
-              <ArrowRight size={18} className="cta-arrow" />
-            </button>
-
-            <button className="cta-secondary-btn" onClick={handleStaffLogin}>
-              <div className="cta-icon-wrap staff-icon-bg">
-                <ShieldCheck size={20} color="#10B981" />
-              </div>
-              <div className="cta-btn-text">
-                <span className="cta-btn-title">Municipal Staff Login</span>
-                <span className="cta-btn-sub">Task assignment & resolution</span>
-              </div>
-              <ChevronRight size={18} className="cta-arrow" />
-            </button>
-          </div>
 
           {/* TRUST PILLS */}
           <div className="hero-trust-bar">
