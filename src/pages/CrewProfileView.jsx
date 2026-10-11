@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from 'react-oidc-context';
 import { useNavigate } from 'react-router-dom';
-import { User, Mail, MapPin, Compass, ShieldCheck, ArrowLeft, LogOut, CheckCircle2, Hash } from 'lucide-react';
+import { User, Mail, MapPin, ShieldCheck, ArrowLeft, LogOut, CheckCircle2, Hash } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -122,7 +122,7 @@ const CrewProfileView = () => {
                 <MapPin size={18} color="#059669" />
               </div>
               <div>
-                <h3>Assigned Address (Words)</h3>
+                <h3>Assigned Address</h3>
                 <span className="sub-tag">Delhi NCT Territorial Jurisdiction</span>
               </div>
             </div>
@@ -130,32 +130,6 @@ const CrewProfileView = () => {
               <p className="primary-address-text">{address}</p>
               <span className="region-indicator">Delhi Region Only</span>
             </div>
-          </div>
-
-          {/* BACKEND COORDINATES CARD (LATITUDE & LONGITUDE) */}
-          <div className="crew-section-card">
-            <div className="card-section-header">
-              <div className="icon-badge blue-badge">
-                <Compass size={18} color="#2563EB" />
-              </div>
-              <div>
-                <h3>Backend Location Coordinates</h3>
-                <span className="sub-tag">Stored in DynamoDB (Lat/Long)</span>
-              </div>
-            </div>
-            <div className="coords-display-grid">
-              <div className="coord-box">
-                <span className="coord-label">Latitude</span>
-                <span className="coord-number">{Number(latitude).toFixed(4)}° N</span>
-              </div>
-              <div className="coord-box">
-                <span className="coord-label">Longitude</span>
-                <span className="coord-number">{Number(longitude).toFixed(4)}° E</span>
-              </div>
-            </div>
-            <p className="coords-explanation">
-              Backend persists exact latitude and longitude; frontend resolves human-readable Delhi street addresses.
-            </p>
           </div>
 
           {/* DELHI MAP CARD */}

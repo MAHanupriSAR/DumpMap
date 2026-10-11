@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { MapPin, Mail, User, ShieldCheck, Hash, Compass, X, LogOut, CheckCircle2 } from 'lucide-react';
+import { MapPin, Mail, User, ShieldCheck, Hash, X, LogOut, CheckCircle2 } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -99,35 +99,9 @@ const CrewProfileModal = ({ profile, onClose, onSignOut }) => {
                 <MapPin size={20} color="#059669" />
               </div>
               <div className="crew-detail-content">
-                <span className="crew-detail-label">Address (Delhi Jurisdiction)</span>
+                <span className="crew-detail-label">Address</span>
                 <p className="crew-address-text">{address}</p>
                 <span className="crew-delhi-tag">Delhi NCT Region Only</span>
-              </div>
-            </div>
-
-            {/* BACKEND COORDINATES CARD */}
-            <div className="crew-detail-card coords-card">
-              <div className="crew-detail-icon-wrap coords-icon-bg">
-                <Compass size={20} color="#2563EB" />
-              </div>
-              <div className="crew-detail-content">
-                <div className="coords-header-row">
-                  <span className="crew-detail-label">Backend Geospatial Data</span>
-                  <span className="coords-tech-badge">DynamoDB Stored</span>
-                </div>
-                <div className="coords-values-row">
-                  <div className="coord-chip">
-                    <span className="coord-k">Latitude:</span>
-                    <span className="coord-v">{Number(latitude).toFixed(4)}° N</span>
-                  </div>
-                  <div className="coord-chip">
-                    <span className="coord-k">Longitude:</span>
-                    <span className="coord-v">{Number(longitude).toFixed(4)}° E</span>
-                  </div>
-                </div>
-                <span className="coords-note">
-                  Stored as exact decimal coordinates on the backend; resolved into human words on the client.
-                </span>
               </div>
             </div>
 

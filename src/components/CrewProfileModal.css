@@ -255,10 +255,6 @@
   border: 1px solid #A7F3D0;
 }
 
-.coords-icon-bg {
-  background: #EFF6FF;
-  border: 1px solid #BFDBFE;
-}
 
 .crew-detail-content {
   display: flex;
@@ -296,56 +292,6 @@
   margin-top: 2px;
 }
 
-.coords-header-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.coords-tech-badge {
-  font-size: 0.68rem;
-  font-weight: 700;
-  color: #2563EB;
-  background: #DBEAFE;
-  padding: 2px 8px;
-  border-radius: 8px;
-  text-transform: uppercase;
-}
-
-.coords-values-row {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-top: 4px;
-}
-
-.coord-chip {
-  display: inline-flex;
-  gap: 6px;
-  background: #F8FAFC;
-  border: 1px solid #E2E8F0;
-  padding: 4px 10px;
-  border-radius: 8px;
-  font-size: 0.82rem;
-}
-
-.coord-k {
-  color: #64748B;
-  font-weight: 500;
-}
-
-.coord-v {
-  color: #1E293B;
-  font-weight: 700;
-  font-family: monospace;
-}
-
-.coords-note {
-  font-size: 0.72rem;
-  color: #94A3B8;
-  font-style: italic;
-  margin-top: 4px;
-}
 
 /* Map Section */
 .crew-map-container {
