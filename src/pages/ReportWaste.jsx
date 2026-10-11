@@ -644,13 +644,7 @@ const ReportWaste = () => {
             
             <div className="location-summary">
               <MapPin size={20} color="#64748B" style={{ flexShrink: 0 }} />
-              <span style={{ textAlign: 'center', wordBreak: 'break-word', padding: '0 8px' }}>can i do git add . ?
-              any secrets?
-              what commit message
-              7:44 AM
-              .gitignore
-              Working.
-              
+              <span style={{ textAlign: 'center', wordBreak: 'break-word', padding: '0 8px' }}>
                 {formData.location?.address || 'Location saved'}
               </span>
             </div>

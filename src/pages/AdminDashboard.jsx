@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
 import { AlertTriangle, CheckCircle, BarChart3, Map as MapIcon, AlertOctagon, Clock, LogOut } from 'lucide-react';
 import { useAuth } from 'react-oidc-context';
+import { signOutCognito } from '../authConfig';
 import './AdminDashboard.css';
 
 const getHotspotColor = (criticality) => {
@@ -33,18 +34,7 @@ const AdminDashboard = () => {
   const workerZone = localStorage.getItem('workerZone') || 'Municipal Zone';
 
   const handleLogout = () => {
-    localStorage.removeItem('auth_pool');
-    localStorage.removeItem('userRole');
-    localStorage.removeItem('staffLoggedIn');
-    localStorage.removeItem('workerId');
-    localStorage.removeItem('workerName');
-    localStorage.removeItem('workerZone');
-    if (auth.signoutRedirect) {
-      auth.signoutRedirect();
-    } else {
-      auth.removeUser();
-      window.location.href = '/';
-    }
+    signOutCognito(auth);
   };
 
   const fetchReports = useCallback(async () => {

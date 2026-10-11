@@ -25,3 +25,30 @@ export const getActiveAuthConfig = () => {
   const pool = localStorage.getItem('auth_pool');
   return pool === 'worker' ? workerAuthConfig : citizenAuthConfig;
 };
+
+// ── COGNITO SIGNOUT HANDLER ────────────────────────────────────────────────
+// AWS Cognito requires /logout?client_id=...&logout_uri=... and rejects standard
+// OIDC id_token_hint query parameters with an HTTP 400 error.
+export const signOutCognito = (auth) => {
+  const pool = localStorage.getItem('auth_pool');
+  
+  // Clear local session
+  localStorage.removeItem('auth_pool');
+  localStorage.removeItem('userRole');
+  localStorage.removeItem('staffLoggedIn');
+  localStorage.removeItem('workerId');
+  localStorage.removeItem('workerName');
+  localStorage.removeItem('workerZone');
+
+  if (auth && auth.removeUser) {
+    auth.removeUser();
+  }
+
+  const clientId = pool === 'worker' ? workerAuthConfig.client_id : citizenAuthConfig.client_id;
+  const domain = pool === 'worker'
+    ? 'https://dumpmap-staff.auth.ap-south-1.amazoncognito.com'
+    : 'https://ap-south-1igogrvgip.auth.ap-south-1.amazoncognito.com';
+
+  const logoutUri = encodeURIComponent(window.location.origin);
+  window.location.href = `${domain}/logout?client_id=${clientId}&logout_uri=${logoutUri}`;
+};

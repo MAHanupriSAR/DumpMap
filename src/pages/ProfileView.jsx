@@ -1,5 +1,6 @@
 import { useAuth } from 'react-oidc-context';
 import { LogOut, Award, MapPin, CheckCircle, Settings, ChevronRight } from 'lucide-react';
+import { signOutCognito } from '../authConfig';
 import './ProfileView.css';
 
 const ProfileView = () => {
@@ -12,14 +13,7 @@ const ProfileView = () => {
   const initial = name.charAt(0).toUpperCase();
 
   const handleSignOut = () => {
-    localStorage.removeItem('auth_pool');
-    localStorage.removeItem('userRole');
-    if (auth.signoutRedirect) {
-      auth.signoutRedirect();
-    } else {
-      auth.removeUser();
-      window.location.href = '/';
-    }
+    signOutCognito(auth);
   };
 
   return (
