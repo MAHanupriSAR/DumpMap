@@ -56,7 +56,6 @@ const Landing = () => {
           <nav className="nav-links">
             <a href="#pipeline" className="nav-link">How It Works</a>
             <a href="#features" className="nav-link">Capabilities</a>
-            <a href="#stats" className="nav-link">Impact</a>
             <a href="#portals" className="nav-link">Portals</a>
           </nav>
 
@@ -328,32 +327,6 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* ── IMPACT METRICS SECTION ───────────────────────────────── */}
-      <section id="stats" className="stats-section">
-        <div className="stats-container">
-          <div className="stat-box">
-            <span className="stat-number">30s</span>
-            <span className="stat-title">Average Report Time</span>
-            <span className="stat-desc">Frictionless 5-step mobile workflow</span>
-          </div>
-          <div className="stat-box">
-            <span className="stat-number">99.4%</span>
-            <span className="stat-title">AI Triage Accuracy</span>
-            <span className="stat-desc">Spam and non-waste photos auto-filtered</span>
-          </div>
-          <div className="stat-box">
-            <span className="stat-number">100%</span>
-            <span className="stat-title">Photo Proof Verified</span>
-            <span className="stat-desc">Every resolved ticket contains cleanup photo</span>
-          </div>
-          <div className="stat-box">
-            <span className="stat-number">0ms</span>
-            <span className="stat-title">Server Maintenance</span>
-            <span className="stat-desc">Zero-idle-cost cloud serverless backend</span>
-          </div>
-        </div>
-      </section>
-
       {/* ── DUAL PORTAL ACCESS SECTION ───────────────────────────── */}
       <section id="portals" className="portals-section">
         <div className="portals-container">
@@ -442,7 +415,6 @@ const Landing = () => {
                 <h4>Platform</h4>
                 <a href="#pipeline">Incident Pipeline</a>
                 <a href="#features">Key Capabilities</a>
-                <a href="#stats">Impact Analytics</a>
                 <a href="#portals">Portal Directory</a>
               </div>
               <div className="footer-column">

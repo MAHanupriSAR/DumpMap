@@ -831,50 +831,6 @@
   margin: 0;
 }
 
-/* ── STATS SECTION ─────────────────────────────────────────────────────── */
-.stats-section {
-  padding: 70px 24px;
-  background: #0F172A;
-  color: #FFFFFF;
-}
-
-.stats-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 32px;
-}
-
-.stat-box {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-}
-
-.stat-number {
-  font-size: 3rem;
-  font-weight: 800;
-  letter-spacing: -1px;
-  color: #10B981;
-  line-height: 1;
-  margin-bottom: 8px;
-}
-
-.stat-title {
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: #F8FAFC;
-  margin-bottom: 6px;
-}
-
-.stat-desc {
-  font-size: 0.85rem;
-  color: #94A3B8;
-  max-width: 220px;
-}
-
 /* ── PORTALS SECTION ──────────────────────────────────────────────────── */
 .portals-section {
   padding: 100px 24px;
