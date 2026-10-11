@@ -1,11 +1,42 @@
 import { useState, useEffect, useCallback } from 'react';
 import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from 'react-leaflet';
-import { AlertTriangle, CheckCircle, BarChart3, Map as MapIcon, AlertOctagon, Clock, LogOut, MapPin, ExternalLink, Camera, UploadCloud, Loader2, Image as ImageIcon, User } from 'lucide-react';
+import { AlertTriangle, CheckCircle, BarChart3, Map as MapIcon, AlertOctagon, Clock, LogOut, MapPin, ExternalLink, Camera, UploadCloud, Loader2, Image as ImageIcon, User, Navigation } from 'lucide-react';
 import { useAuth } from 'react-oidc-context';
 import { signOutCognito } from '../authConfig';
 import CrewProfileModal from '../components/CrewProfileModal';
-import { fetchWorkerProfile } from '../services/workerProfile';
+import { fetchWorkerProfile, DELHI_WORKERS_DIRECTORY } from '../services/workerProfile';
 import './AdminDashboard.css';
+
+// Calculate great-circle distance between two points in km (Haversine formula)
+const calculateDistanceKm = (lat1, lon1, lat2, lon2) => {
+  if (lat1 == null || lon1 == null || lat2 == null || lon2 == null) return Infinity;
+  const numLat1 = parseFloat(lat1);
+  const numLon1 = parseFloat(lon1);
+  const numLat2 = parseFloat(lat2);
+  const numLon2 = parseFloat(lon2);
+  if (isNaN(numLat1) || isNaN(numLon1) || isNaN(numLat2) || isNaN(numLon2)) return Infinity;
+
+  const R = 6371; // Earth's radius in km
+  const dLat = (numLat2 - numLat1) * (Math.PI / 180);
+  const dLon = (numLon2 - numLon1) * (Math.PI / 180);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(numLat1 * (Math.PI / 180)) *
+      Math.cos(numLat2 * (Math.PI / 180)) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+};
+
+const formatDistance = (distanceKm) => {
+  if (!isFinite(distanceKm) || distanceKm == null) return null;
+  if (distanceKm < 1) {
+    const meters = Math.round(distanceKm * 1000);
+    return `${meters} m`;
+  }
+  return `${distanceKm.toFixed(1)} km`;
+};
 
 const RecenterMap = ({ lat, lng, zoom = 16 }) => {
   const map = useMap();
@@ -231,12 +262,27 @@ const AdminDashboard = () => {
     }
   };
 
-  // Compute analytics and lists
+  // Crew Base Address X coordinates & address in words
+  const fallbackWorkerEntry = DELHI_WORKERS_DIRECTORY[workerEmail?.toLowerCase()] || DELHI_WORKERS_DIRECTORY['worker1@dumpmap.gov'];
+  const crewLat = workerProfile?.latitude ?? fallbackWorkerEntry?.latitude ?? 28.7041;
+  const crewLng = workerProfile?.longitude ?? fallbackWorkerEntry?.longitude ?? 77.1025;
+  const crewAddress = workerProfile?.address || fallbackWorkerEntry?.addressInWords || 'Sector 14, Rohini, North Delhi, Delhi 110085';
+
+  // Compute analytics and lists sorted by distance from crew address X (nearest first, farthest last)
+  const sortByDistance = (list) => {
+    return list
+      .map(r => ({
+        ...r,
+        distanceKm: calculateDistanceKm(crewLat, crewLng, r.lat, r.lng)
+      }))
+      .sort((a, b) => a.distanceKm - b.distanceKm);
+  };
+
   const validReports = reports.filter(r => r.status !== 'rejected');
   
-  const availableReports = validReports.filter(r => r.status === 'active');
-  const acceptedReports = validReports.filter(r => r.status === 'accepted' && r.assignedTo === userId);
-  const resolvedReports = validReports.filter(r => r.status === 'resolved' && r.assignedTo === userId);
+  const availableReports = sortByDistance(validReports.filter(r => r.status === 'active'));
+  const acceptedReports = sortByDistance(validReports.filter(r => r.status === 'accepted' && r.assignedTo === userId));
+  const resolvedReports = sortByDistance(validReports.filter(r => r.status === 'resolved' && r.assignedTo === userId));
   
   const currentList = activeTab === 'available' ? availableReports : activeTab === 'accepted' ? acceptedReports : resolvedReports;
   const criticalReports = availableReports.filter(r => r.criticality === 'high');
@@ -323,11 +369,13 @@ const AdminDashboard = () => {
               <div className="admin-map-container">
                 <MapContainer 
                   center={
-                    availableReports.length > 0 && !isNaN(parseFloat(availableReports[0].lat))
+                    crewLat && crewLng
+                      ? [crewLat, crewLng]
+                      : availableReports.length > 0 && !isNaN(parseFloat(availableReports[0].lat))
                       ? [parseFloat(availableReports[0].lat), parseFloat(availableReports[0].lng)]
                       : [28.6139, 77.2090]
                   } 
-                  zoom={13} 
+                  zoom={12} 
                   style={{ height: '100%', width: '100%', borderRadius: '12px' }}
                   zoomControl={true}
                 >
@@ -335,9 +383,31 @@ const AdminDashboard = () => {
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                   />
-                  {availableReports.length > 0 && !isNaN(parseFloat(availableReports[0].lat)) && (
-                    <RecenterMap lat={parseFloat(availableReports[0].lat)} lng={parseFloat(availableReports[0].lng)} zoom={13} />
+                  {crewLat && crewLng ? (
+                    <RecenterMap lat={crewLat} lng={crewLng} zoom={12} />
+                  ) : availableReports.length > 0 && !isNaN(parseFloat(availableReports[0].lat)) ? (
+                    <RecenterMap lat={parseFloat(availableReports[0].lat)} lng={parseFloat(availableReports[0].lng)} zoom={12} />
+                  ) : null}
+
+                  {/* Crew's Base / Assigned Location Marker */}
+                  {crewLat && crewLng && (
+                    <CircleMarker
+                      center={[crewLat, crewLng]}
+                      radius={12}
+                      pathOptions={{ 
+                        color: '#065F46',
+                        fillColor: '#10B981',
+                        fillOpacity: 0.95,
+                        weight: 3
+                      }}
+                    >
+                      <Popup>
+                        <strong>📍 Your Base / Assigned Location</strong><br/>
+                        <span>{crewAddress}</span>
+                      </Popup>
+                    </CircleMarker>
                   )}
+
                   {availableReports.map(report => (
                     <CircleMarker
                       key={report.id}
@@ -355,7 +425,12 @@ const AdminDashboard = () => {
                     >
                       <Popup>
                         <strong>{report.type} waste</strong><br/>
-                        {report.location}
+                        <span>{report.location}</span><br/>
+                        {report.distanceKm != null && isFinite(report.distanceKm) && (
+                          <span style={{ color: '#059669', fontWeight: 600 }}>
+                            📍 {formatDistance(report.distanceKm)} from your base
+                          </span>
+                        )}
                       </Popup>
                     </CircleMarker>
                   ))}
@@ -365,8 +440,14 @@ const AdminDashboard = () => {
 
             {/* STAFF TASK MANAGER */}
             <div className="priority-card">
-              <div className="card-header" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '16px' }}>
-                <h2>Staff Task Manager</h2>
+              <div className="card-header" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '14px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', flexWrap: 'wrap', gap: '10px' }}>
+                  <h2>Staff Task Manager</h2>
+                  <div className="crew-sort-badge" title={`Sorted by distance from your base address: ${crewAddress}`}>
+                    <Navigation size={12} />
+                    <span>Nearest First · Proximity to Base</span>
+                  </div>
+                </div>
                 <div className="staff-tabs" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                   <button className={`tab-btn ${activeTab === 'available' ? 'active' : ''}`} onClick={() => setActiveTab('available')}>Available ({availableReports.length})</button>
                   <button className={`tab-btn ${activeTab === 'accepted' ? 'active' : ''}`} onClick={() => setActiveTab('accepted')}>My Accepted ({acceptedReports.length})</button>
@@ -387,6 +468,12 @@ const AdminDashboard = () => {
                       <h3>{report.location}</h3>
                       <div className="priority-meta">
                         <span className="meta-badge">{report.type} waste</span>
+                        {report.distanceKm != null && isFinite(report.distanceKm) && (
+                          <span className="meta-distance" title={`Distance from your base (${crewAddress})`}>
+                            <Navigation size={11} />
+                            {formatDistance(report.distanceKm)}
+                          </span>
+                        )}
                         <span className="meta-time">since {formatTimeAgo(report.createdAt)}</span>
                       </div>
                     </div>
@@ -435,6 +522,12 @@ const AdminDashboard = () => {
                     <div className="report-card-details">
                       <p><strong>Type:</strong> {report.type || 'General'} Waste</p>
                       <p><strong>Amount:</strong> {report.amount || 'Unknown'}</p>
+                      {report.distanceKm != null && isFinite(report.distanceKm) && (
+                        <p style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#059669', fontWeight: 600 }}>
+                          <Navigation size={13} />
+                          <strong>Distance from base:</strong> {formatDistance(report.distanceKm)}
+                        </p>
+                      )}
                       
                       {report.severity && report.severity.length > 0 && (
                         <div className="report-issues">
