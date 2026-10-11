@@ -622,31 +622,41 @@
 /* Pipeline Connectors */
 .pipeline-connector {
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 0 4px;
+  position: relative;
 }
 
 .connector-line {
-  width: 40px;
+  width: 24px;
   height: 2px;
   background: repeating-linear-gradient(90deg, #CBD5E1, #CBD5E1 4px, transparent 4px, transparent 8px);
 }
 
 .connector-badge {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 4px;
-  font-size: 0.7rem;
+  gap: 6px;
+  font-size: 0.72rem;
   font-weight: 700;
-  color: #475569;
+  color: #334155;
   background: #FFFFFF;
   border: 1px solid #E2E8F0;
-  padding: 2px 8px;
-  border-radius: 12px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  padding: 4px 10px;
+  border-radius: 20px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  white-space: nowrap;
+}
+
+.connector-arrow-desktop {
+  display: block;
+  color: #94A3B8;
+  flex-shrink: 0;
+}
+
+.connector-arrow-mobile {
+  display: none;
 }
 
 /* ── FEATURES SECTION ─────────────────────────────────────────────────── */
@@ -685,7 +695,7 @@
 
 .features-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 28px;
 }
 
@@ -742,7 +752,7 @@
 
 .portals-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 32px;
 }
 
@@ -1031,12 +1041,40 @@
 
   .pipeline-grid {
     grid-template-columns: 1fr;
-    gap: 20px;
+    gap: 0;
   }
 
   .pipeline-connector {
-    transform: rotate(90deg);
-    margin: 8px 0;
+    flex-direction: column;
+    margin: 14px auto;
+    gap: 6px;
+    transform: none !important;
+  }
+
+  .connector-line {
+    width: 2px;
+    height: 16px;
+    background: repeating-linear-gradient(180deg, #CBD5E1, #CBD5E1 3px, transparent 3px, transparent 6px);
+  }
+
+  .connector-arrow-desktop {
+    display: none;
+  }
+
+  .connector-arrow-mobile {
+    display: block;
+    color: #10B981;
+    margin-top: 2px;
+  }
+
+  .features-grid {
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 20px;
+  }
+
+  .portals-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
   }
 
   .footer-top {
@@ -1046,30 +1084,138 @@
 }
 
 @media (max-width: 768px) {
+  .landing-topbar {
+    padding: 6px 12px;
+  }
+
+  .topbar-text {
+    font-size: 0.74rem;
+  }
+
+  .topbar-pill {
+    display: none;
+  }
+
+  .nav-container {
+    padding: 10px 16px;
+  }
+
+  .brand-title {
+    font-size: 1.15rem;
+  }
+
+  .brand-tag {
+    display: none;
+  }
+
   .nav-links {
     display: none;
   }
 
+  .nav-actions {
+    gap: 6px;
+  }
+
+  .nav-btn {
+    padding: 7px 12px;
+    font-size: 0.78rem;
+    border-radius: 8px;
+  }
+
   .hero-section {
-    padding: 50px 20px 40px 20px;
+    padding: 40px 16px 40px 16px;
   }
 
   .hero-heading {
-    font-size: 2.1rem;
-    letter-spacing: -0.8px;
+    font-size: 1.9rem;
+    letter-spacing: -0.6px;
+    line-height: 1.2;
+    margin-bottom: 16px;
   }
 
   .hero-description {
-    font-size: 1rem;
+    font-size: 0.95rem;
+    line-height: 1.55;
+    margin-bottom: 24px;
   }
 
+  .hero-trust-bar {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 12px 14px;
+    border-radius: 16px;
+    max-width: 360px;
+    margin: 0 auto;
+    box-sizing: border-box;
+  }
 
-  .portals-grid {
-    grid-template-columns: 1fr;
+  .trust-divider {
+    display: none;
+  }
+
+  .trust-item {
+    font-size: 0.74rem;
+    justify-content: flex-start;
+  }
+
+  .pipeline-showcase-container {
+    margin-top: 36px;
+    padding: 0 4px;
+  }
+
+  .showcase-header {
+    margin-bottom: 24px;
+  }
+
+  .showcase-header h2 {
+    font-size: 1.45rem;
+    line-height: 1.25;
+  }
+
+  .showcase-header p {
+    font-size: 0.88rem;
+  }
+
+  .pipeline-card {
+    padding: 16px 14px;
+    border-radius: 16px;
+    box-sizing: border-box;
+  }
+
+  .mock-card-header {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .mock-worker {
+    font-size: 0.76rem;
+  }
+
+  .mock-location {
+    font-size: 0.76rem;
+    padding: 6px 8px;
+  }
+
+  .features-section {
+    padding: 60px 16px;
+  }
+
+  .section-header-centered {
+    margin-bottom: 36px;
+  }
+
+  .section-header-centered h2 {
+    font-size: 1.6rem;
+  }
+
+  .portals-section {
+    padding: 60px 16px;
   }
 
   .portal-action-card {
-    padding: 28px 20px;
+    padding: 24px 18px;
+    border-radius: 18px;
   }
 
   .footer-links-group {

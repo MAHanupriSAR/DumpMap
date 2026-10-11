@@ -2,6 +2,7 @@ import {
   ShieldCheck, 
   User, 
   ArrowRight, 
+  ArrowDown, 
   Sparkles, 
   MapPin, 
   CheckCircle, 
@@ -153,13 +154,16 @@ const Landing = () => {
               </div>
             </div>
 
-            {/* CONNECTOR ARROW */}
+            {/* CONNECTOR ARROW 1 */}
             <div className="pipeline-connector">
-              <div className="connector-line"></div>
+              <div className="connector-line connector-line-start"></div>
               <div className="connector-badge">
-                <Sparkles size={14} color="#3B82F6" />
+                <Sparkles size={13} color="#3B82F6" />
                 <span>AI Stream</span>
               </div>
+              <div className="connector-line connector-line-end"></div>
+              <ArrowRight size={14} className="connector-arrow-desktop" />
+              <ArrowDown size={14} className="connector-arrow-mobile" />
             </div>
 
             {/* STEP 2: AI REKOGNITION */}
@@ -199,13 +203,16 @@ const Landing = () => {
               </div>
             </div>
 
-            {/* CONNECTOR ARROW */}
+            {/* CONNECTOR ARROW 2 */}
             <div className="pipeline-connector">
-              <div className="connector-line"></div>
+              <div className="connector-line connector-line-start"></div>
               <div className="connector-badge">
-                <ShieldCheck size={14} color="#10B981" />
+                <ShieldCheck size={13} color="#10B981" />
                 <span>Dispatch</span>
               </div>
+              <div className="connector-line connector-line-end"></div>
+              <ArrowRight size={14} className="connector-arrow-desktop" />
+              <ArrowDown size={14} className="connector-arrow-mobile" />
             </div>
 
             {/* STEP 3: WORKER RESOLUTION */}
